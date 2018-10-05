@@ -2,10 +2,7 @@ import json
 import asyncio
 from guillotina import configure
 from guillotina.api.service import Service
-from guillotina_kafka.interfaces import IKafkaUtility
-from guillotina.component import get_utility
-
-# producer = get_utility(IKafkaUtility)
+from guillotina_kafka.util import get_kafka_producer
 
 
 @configure.service(
@@ -15,10 +12,20 @@ from guillotina.component import get_utility
 class Run(Service):
 
     async def __call__(self):
+
+        producer = await get_kafka_producer()
         topic = self.request.matchdict.get('topic')
         data = await self.request.json()
-        # await producer.send(topic, data)
-        return {
-            'topic': topic,
-            'data': data
-        }
+        sent, result = await producer.send(topic, data)
+
+        if not sent:
+            result = dict(error=str(result))
+        else:
+            result = {
+                'topic': result.topic,
+                'partition': result.partition,
+                'offset': result.offset,
+                'timestamp': result.timestamp,
+            }
+
+        return {'sent': sent, 'result': result}

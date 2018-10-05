@@ -1,11 +1,15 @@
 from guillotina import configure
-from .util import *  # noqa
-from .interfaces import *  # noqa
+# from .util import *  # noqa
+# from .interfaces import *  # noqa
 
 
 app_settings = {
-    'commands': {
+    "commands": {
         "kafka-consumer": "guillotina_kafka.commands.consumer.ConsumerCommand"
+    },
+    "kafka": {
+        "host": "localhost",
+        "port": 9092
     }
 }
 

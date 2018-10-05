@@ -1,20 +1,41 @@
 import json
+import aiohttp
 import asyncio
 import logging
 from guillotina import app_settings
 from guillotina import configure
-from .interfaces import IKafkaUtility
 from zope.interface import Interface
 from aiokafka import AIOKafkaProducer
+import kafka.common as kafkaError
 
 logger = logging.getLogger('guillotina_kafka')
+kafka_producer = None
 
 
 def get_kafa_host():
-    # print(app_settings['applications'])
     host = app_settings['kafka'].get('host')
     port = app_settings['kafka'].get('port')
     return f'{host}:{port}'
+
+
+def get_producer_api_url():
+    return app_settings['kafka'].get('producer_api_url')
+
+
+async def get_kafka_producer():
+    global kafka_producer
+    if kafka_producer is None:
+        kafka_producer = KafkaProducer(None,  get_kafa_host())
+        await kafka_producer.connect()
+    return kafka_producer
+
+
+async def send_to_kafka(topic, payload):
+    url = f'{get_producer_api_url()}/{topic}'
+    auth = aiohttp.BasicAuth(login='root', password='root')
+    async with aiohttp.ClientSession(json_serialize=json.dumps) as session:
+        respons = await session.post(url, json=payload, auth=auth)
+    return (respons.status, await respons.json())
 
 
 class KafkaProducer:
@@ -36,22 +57,8 @@ class KafkaProducer:
         await self.conn.stop()
 
     async def send(self, topic, data):
-        self.conn.send_and_wait(topic, self.serializer(data))
-
-
-@configure.utility(provides=IKafkaUtility)
-class KafkaUtility:
-
-    def __init__(self):
-        self.bootstrap_servers = get_kafa_host()
-        self._instance = None
-
-    async def get(self):
-        return self._instance
-
-    async def initialize(self, app=None):
-        self._instance = KafkaProducer(None,  self.bootstrap_servers)
-        await self._instance.connect()
-
-    async def finalize(self, app=None):
-        await self._instance.close()
+        try:
+            result = await self.conn.send(topic, self.serializer(data))
+            return True, await result
+        except kafkaError.RequestTimedOutError as e:
+            return False, e
