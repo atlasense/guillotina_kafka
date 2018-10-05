@@ -13,7 +13,10 @@ setup(
     description='Guillotina server application python project',
     long_description=README,
     install_requires=[
-        'guillotina'
+        'guillotina==3.2.16',
+        'kafka-python==1.4.3',
+        'aiokafka==0.4.2',
+        'backoff==1.6.0',
     ],
     author='Guillotina Kafa',
     author_email='sekou@onna.com',
