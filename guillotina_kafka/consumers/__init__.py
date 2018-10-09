@@ -5,12 +5,11 @@ from aiokafka import AIOKafkaConsumer
 
 
 def deserializer(msg):
-    result = {}
     try:
         msg = msg.decode('utf-8')
         result = json.loads(msg)
     except JSONDecodeError as e:
-        pass
+        result = {}
     return result
 
 

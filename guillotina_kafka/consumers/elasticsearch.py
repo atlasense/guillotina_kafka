@@ -4,7 +4,7 @@ import logging
 from guillotina_kafka.consumers import make_consumer
 from guillotina.interfaces import ICatalogUtility
 from guillotina.component import get_utility
-from guillotina_kafka.util import send_to_kafka
+from guillotina_kafka.util import get_kafka_producer
 
 logger = logging.getLogger('guillotina_kafka')
 
@@ -23,8 +23,9 @@ def log_result(result, label):
 
 
 async def backoff_hdlr(details):
+    kafka_producer = get_kafka_producer()
     topic = 'T-elasticsearch-dead-letter'
-    await send_to_kafka(topic, details)
+    await kafka_producer.send(topic, details)
 
 
 @backoff.on_exception(
@@ -67,13 +68,18 @@ async def update_elasticsearch(index_name, action, data):
     }[action](util.conn, index_name, data)
 
 
+def parser(payload):
+    if sorted(payload.keys()) == sorted(['index', 'action', 'data']):
+        return payload['action'] in ['index', 'delete', 'delete_children']
+    return False
+
 async def es_consumer(kafka_hosts, topics, group_id='es_consumer'):
     print(f'Starting es_consumer:{group_id} <= {topics!r}')
     consumer = await make_consumer(kafka_hosts, topics, group_id)
     await consumer.start()
     try:
         async for msg in consumer:
-            if msg.value:
+            if msg.value and parser(msg.value):
                 _ = await update_elasticsearch(
                     msg.value.get('index'),
                     msg.value.get('action'),

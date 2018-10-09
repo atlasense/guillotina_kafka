@@ -18,24 +18,12 @@ def get_kafa_host():
     return f'{host}:{port}'
 
 
-def get_producer_api_url():
-    return app_settings['kafka'].get('producer_api_url')
-
-
 async def get_kafka_producer():
     global kafka_producer
     if kafka_producer is None:
         kafka_producer = KafkaProducer(None,  get_kafa_host())
         await kafka_producer.connect()
     return kafka_producer
-
-
-async def send_to_kafka(topic, payload):
-    url = f'{get_producer_api_url()}/{topic}'
-    auth = aiohttp.BasicAuth(login='root', password='root')
-    async with aiohttp.ClientSession(json_serialize=json.dumps) as session:
-        respons = await session.post(url, json=payload, auth=auth)
-    return (respons.status, await respons.json())
 
 
 class KafkaProducer:
