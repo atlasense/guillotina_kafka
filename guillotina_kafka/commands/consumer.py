@@ -1,6 +1,6 @@
 from guillotina.commands import Command
 from guillotina_kafka.consumers.elasticsearch import es_consumer
-
+from guillotina_kafka.consumers.generic import generic_consumer
 
 consumer_app_map = {
     'es_consumer': es_consumer
@@ -25,8 +25,8 @@ class ConsumerCommand(Command):
         return parser
 
     async def run(self, arguments, settings, app):
-        consumer = consumer_app_map[arguments.consumer_app]
-        await consumer(
+        #consumer = consumer_app_map[arguments.consumer_app]
+        await generic_consumer(
             '{host}:{port}'.format(**settings['kafka']),
             arguments.topics,
             group_id=arguments.consumer_group)
