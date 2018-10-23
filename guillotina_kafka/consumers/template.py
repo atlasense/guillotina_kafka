@@ -1,8 +1,8 @@
 import logging
 from guillotina import configure
 from zope.interface import Interface
-from guillotina4_kafka.interfaces import Consumer
-from guillotina4_kafka.interfaces import IConsumer
+from guillotina_kafka.interfaces import Consumer
+from guillotina_kafka.interfaces import IConsumer
 
 
 logger = logging.getLogger('TemplateConsumer')

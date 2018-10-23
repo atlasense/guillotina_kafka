@@ -1,7 +1,7 @@
 from guillotina.commands import Command
 from guillotina.component import get_adapter
-from guillotina4_kafka.interfaces import Producer
-from guillotina4_kafka.producer import ICliSendMessage
+from guillotina_kafka.interfaces import Producer
+from guillotina_kafka.producer import ICliSendMessage
 
 
 class SendMessageCommand(Command):

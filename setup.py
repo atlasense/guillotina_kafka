@@ -8,12 +8,12 @@ except IOError:
     README = None
 
 setup(
-    name='guillotina4_kafka',
-    version="1.0.0",
+    name='guillotina_kafka',
+    version="2.0.0",
     description='Guillotina server application python project',
     long_description=README,
     install_requires=[
-        'guillotina==4.2.10',
+        'guillotina==4.2.4',
         'aiokafka==0.4.2'
     ],
     author='Sekou Oumar',

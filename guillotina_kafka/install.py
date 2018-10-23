@@ -4,7 +4,7 @@ from guillotina.addons import Addon
 
 
 @configure.addon(
-    name="guillotina4_kafka",
+    name="guillotina_kafka",
     title="Guillotina server application python project")
 class ManageAddon(Addon):
 

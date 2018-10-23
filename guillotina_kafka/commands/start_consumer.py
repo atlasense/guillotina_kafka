@@ -1,9 +1,9 @@
 from guillotina.commands import Command
 from guillotina.component import get_adapter
 from guillotina.utils import resolve_dotted_name
-from guillotina4_kafka.interfaces import Consumer
-from guillotina4_kafka.consumers import ConsumerLookupError
-from guillotina4_kafka.consumers import CONSUMER_INTERFACE_REGISTRY
+from guillotina_kafka.interfaces import Consumer
+from guillotina_kafka.consumers import ConsumerLookupError
+from guillotina_kafka.consumers import CONSUMER_INTERFACE_REGISTRY
 
 
 class StartConsumerCommand(Command):

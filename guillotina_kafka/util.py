@@ -1,7 +1,7 @@
 import json
 import logging
 from guillotina import app_settings
-from guillotina4_kafka.interfaces import Producer
+from guillotina_kafka.interfaces import Producer
 
 logger = logging.getLogger('guillotina_kafka')
 kafka_producer = None

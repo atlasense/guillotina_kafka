@@ -1,8 +1,8 @@
 import logging
 from guillotina import configure
 from zope.interface import Interface
-from guillotina4_kafka.interfaces import Producer
-from guillotina4_kafka.interfaces import IProducer
+from guillotina_kafka.interfaces import Producer
+from guillotina_kafka.interfaces import IProducer
 
 
 logger = logging.getLogger('SendMessage')

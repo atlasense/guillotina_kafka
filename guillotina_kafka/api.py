@@ -3,8 +3,8 @@ import asyncio
 from guillotina import configure
 from guillotina.api.service import Service
 from guillotina.component import get_adapter
-from guillotina4_kafka.util import get_kafka_producer
-from guillotina4_kafka.producer import IWebApiSendMessage
+from guillotina_kafka.util import get_kafka_producer
+from guillotina_kafka.producer import IWebApiSendMessage
 
 
 @configure.service(
