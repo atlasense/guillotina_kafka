@@ -1,11 +1,6 @@
 ---
 applications:
 - guillotina_kafka
-databases:
-  db:
-    storage: postgresql
-    dsn: postgresql://guillotina@localhost:5432/guillotina
-    read_only: false
 host: 127.0.0.1
 port: 8080
 root_user:
@@ -40,4 +35,3 @@ jwt:
 kafka:
   host: localhost
   port: 9092
-  producer_api_url: http://localhost:8080/@kafka-producer

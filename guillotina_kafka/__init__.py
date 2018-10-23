@@ -5,7 +5,8 @@ from guillotina import configure
 
 app_settings = {
     "commands": {
-        "kafka-consumer": "guillotina_kafka.commands.consumer.ConsumerCommand"
+        "kafka-producer": "guillotina_kafka.commands.kafka_producer.SendMessageCommand",
+        "start-consumer": "guillotina_kafka.commands.start_consumer.StartConsumerCommand"
     },
     "kafka": {
         "host": "localhost",
