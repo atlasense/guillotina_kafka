@@ -1,9 +1,9 @@
+from guillotina import app_settings
 from guillotina.commands import Command
 from guillotina.component import get_adapter
 from guillotina.utils import resolve_dotted_name
 from guillotina_kafka.interfaces import Consumer
 from guillotina_kafka.consumers import ConsumerLookupError
-from guillotina_kafka.consumers import CONSUMER_INTERFACE_REGISTRY
 
 
 class StartConsumerCommand(Command):
@@ -37,7 +37,8 @@ class StartConsumerCommand(Command):
         )
 
         try:
-            consumer_interface = CONSUMER_INTERFACE_REGISTRY[arguments.name]
+            consumer_interface = app_settings['kafka']['consumers'][arguments.name]
+            consumer_interface = resolve_dotted_name(consumer_interface)
         except KeyError:
             raise ConsumerLookupError(
                 f'Consumer {arguments.name} has not been define.')

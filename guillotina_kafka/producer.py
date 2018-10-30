@@ -11,7 +11,7 @@ logger = logging.getLogger('SendMessage')
 class ICliSendMessage(Interface):
     async def send_one():
         pass
-    
+
     async def send():
         pass
 
@@ -23,9 +23,9 @@ class CliSendMessage:
         self.producer = producer
 
     async def send_one(self, message):
-        await self.producer.start()
+        _ = await self.producer.start()
         response = await self.producer.send(message)
-        await self.producer.stop()
+        _ = await self.producer.stop()
         return response
 
     async def send(self):
