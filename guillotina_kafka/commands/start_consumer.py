@@ -27,7 +27,6 @@ class StartConsumerCommand(Command):
         return parser
 
     def get_consumer(self, arguments, settings):
-
         consumer = Consumer(
             arguments.name,
             settings['kafka'].get('host', '127.0.0.1'),

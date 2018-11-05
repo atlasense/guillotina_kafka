@@ -30,8 +30,8 @@ class IConsumer(IKafak):
 class Consumer(object):
 
     def __init__(
-            self, application_name, host, port, group, topics,
-            deserializer=lambda msg: msg.decode('utf-8')):
+            self, application_name, host, port,
+            group, topics, deserializer=None):
 
         self.application_name = application_name
         self.host = host
@@ -48,7 +48,8 @@ class Consumer(object):
                 *self.topics, group_id=self.group,
                 loop=asyncio.get_event_loop(),
                 bootstrap_servers=f'{self.host}:{self.port}',
-                value_deserializer=self.deserializer
+                value_deserializer=self.deserializer,
+                auto_offset_reset='earliest'
             )
             await self._consumer.start()
 
