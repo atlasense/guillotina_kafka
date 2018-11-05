@@ -33,11 +33,15 @@ class SendMessageCommand(Command):
         )
         producer = get_adapter(producer, ICliSendMessage)
         if arguments.interactive:
-            await producer.send()
+            return (await producer.send())
         else:
             return (await producer.send_one(arguments.data))
 
     async def run(self, arguments, settings, app):
-        result = await self.send(arguments, settings)
+        result = None
+        try:
+            result = await self.send(arguments, settings)
+        except Exception:
+            pass
         if result is not None:
             print(result)
