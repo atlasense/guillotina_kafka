@@ -36,6 +36,6 @@ jwt:
   secret: foobar
   algorithm: HS256
 kafka:
-  host: 192.168.99.100
+  host: localhost
   port: 9092
   producer_api_url: http://localhost:8080/@kafka-producer

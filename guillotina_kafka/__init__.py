@@ -19,4 +19,7 @@ def includeme(root):
     custom application initialization here
     """
     configure.scan('guillotina_kafka.api')
+    configure.scan('guillotina_kafka.interfaces')
+    configure.scan('guillotina_kafka.consumers.elasticsearch')
+    configure.scan('guillotina_kafka.consumers.generic')
     configure.scan('guillotina_kafka.install')

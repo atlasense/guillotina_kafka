@@ -1,10 +1,12 @@
 import json
 import backoff
 import logging
+from guillotina import configure
 from guillotina_kafka.consumers import make_consumer
 from guillotina.interfaces import ICatalogUtility
 from guillotina.component import get_utility
 from guillotina_kafka.util import get_kafka_producer
+from guillotina_kafka.interfaces import IConsumer
 
 logger = logging.getLogger('guillotina_kafka')
 
@@ -72,6 +74,13 @@ def parser(payload):
     if sorted(payload.keys()) == sorted(['index', 'action', 'data']):
         return payload['action'] in ['index', 'delete', 'delete_children']
     return False
+
+
+@configure.utility(provides=IConsumer, name='elasticsearch')
+class EsConsumer:
+    def consumer(self):
+        return es_consumer
+
 
 async def es_consumer(kafka_hosts, topics, group_id='es_consumer'):
     print(f'Starting es_consumer:{group_id} <= {topics!r}')
