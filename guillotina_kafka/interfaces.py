@@ -41,8 +41,7 @@ class Consumer(object):
         self.deserializer = deserializer
         self._consumer = None
 
-    async def __aiter__(self):
-
+    async def init_consumer(self):
         if self._consumer is None:
             self._consumer = AIOKafkaConsumer(
                 *self.topics, group_id=self.group,
@@ -52,8 +51,10 @@ class Consumer(object):
                 auto_offset_reset='earliest'
             )
             await self._consumer.start()
-
         return self._consumer
+
+    async def __aiter__(self):
+        return await self.init_consumer()
 
     async def stop(self):
         return (await self._consumer.stop())

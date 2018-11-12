@@ -10,7 +10,7 @@ except IOError:
 setup(
     name='guillotina_kafka',
     version="2.0.0",
-    description='Guillotina server application python project',
+    description='Guillotina Kafka add-on',
     long_description=README,
     install_requires=[
         'guillotina==4.2.4',
