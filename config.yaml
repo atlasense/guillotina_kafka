@@ -34,4 +34,9 @@ jwt:
   algorithm: HS256
 kafka:
   host: localhost
-  port: 9092  
+  port: 9092
+  producers:
+    default: None
+  consumers:
+    batch: None
+    stream: None
