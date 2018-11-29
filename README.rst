@@ -29,4 +29,5 @@ Running Kafka Producer:
   guillotina kafka-producer  --topic TEST-TOPIC --interactive
 
 Running Kafka Consumer:
-  guillotina start-consumer --name template --topics TEST-TOPIC  --consumer-group test
+  guillotina start-consumer --consumer-type=batch --consumer-worker=default --topics=TEST-TOPIC --take=1000 --within=60
+  guillotina start-consumer --consumer-type=stream --consumer-worker=default --topics=TEST-TOPIC  --consumer-group=test

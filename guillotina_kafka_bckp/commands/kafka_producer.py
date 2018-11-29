@@ -1,7 +1,7 @@
 from guillotina.commands import Command
 from guillotina.component import get_adapter
-from guillotina_kafka.interfaces import CliProducer
-from guillotina_kafka.interfaces import CliProducerUtility
+from guillotina_kafka.utilities.producers import Producer
+from guillotina_kafka.utilities.producers.default import DefaultProducerUtility
 
 
 class SendMessageCommand(Command):
@@ -40,12 +40,12 @@ class SendMessageCommand(Command):
     async def send(self, arguments, settings, app):
         host = settings['kafka']['host']
         port = settings['kafka']['port']
-        cli_producer = CliProducer(
+        producer = Producer(
             'cli-producer',
             bootstrap_servers=[f"{host}:{port}"]
         )
-        print(cli_producer)
-        cli_producer = get_adapter(cli_producer, CliProducerUtility)
+        print(producer)
+        producer = get_adapter(producer, DefaultProducerUtility)
 
     async def run(self, arguments, settings, app):
         result = await self.send(arguments, settings, app)

@@ -1,0 +1,55 @@
+{
+    "applications": [
+        "guillotina_kafka"
+    ],
+    "host": "127.0.0.1",
+    "port": 8080,
+    "root_user": {
+        "password": "root"
+    },
+    "auth_extractors": [
+        "guillotina.auth.extractors.BearerAuthPolicy",
+        "guillotina.auth.extractors.BasicAuthPolicy",
+        "guillotina.auth.extractors.WSTokenAuthPolicy"
+    ],
+    "auth_token_validators": [
+        "guillotina.auth.validators.SaltedHashPasswordValidator",
+        "guillotina.auth.validators.JWTValidator"
+    ],
+    "cors": {
+        "allow_origin": [
+            "http://localhost:8080",
+            "chrome-extension://*"
+        ],
+        "allow_methods": [
+            "GET",
+            "POST",
+            "DELETE",
+            "HEAD",
+            "PATCH",
+            "OPTIONS"
+        ],
+        "allow_headers": [
+            "*"
+        ],
+        "expose_headers": [
+            "*"
+        ],
+        "allow_credentials": true,
+        "max_age": 3660
+    },
+    "jwt": {
+        "secret": "foobar",
+        "algorithm": "HS256"
+    },
+    "kafka": {
+        "host": "localhost",
+        "port": 9092,
+        "producers": {
+            "default": null
+        },
+        "consumer_workers": {
+            "default": "guillotina_kafka.consumer.default_worker"
+        }
+    }
+}

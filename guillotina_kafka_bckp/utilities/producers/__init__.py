@@ -8,19 +8,15 @@ from guillotina_kafka.interfaces.producer import IProducer
 class Producer(object):
 
     def __init__(
-            self, app_name, host,
-            port, loop=None, max_request_size=None,
-            key_serializer=None, value_serializer=None):
+            self, app_name, loop=None, max_request_size=None, **kwargs):
 
         self.app_name = app_name
         self._producer = None
 
         self.config = {
-            'key_serializer': key_serializer,
-            'bootstrap_servers': f'{host}:{port}',
-            'value_serializer': value_serializer,
             'loop': loop or asyncio.get_event_loop(),
             'max_request_size': max_request_size or 104857600,
+            **kwargs
         }
 
     @property
@@ -39,6 +35,9 @@ class Producer(object):
     def send(self):
         return self._producer.send
 
+    @property
+    def send_and_wait(self):
+        return self._producer.send_and_wait
+
     async def stop(self):
         return (await self._producer.stop())
-
