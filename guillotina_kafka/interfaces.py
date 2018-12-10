@@ -95,7 +95,7 @@ class Producer(object):
         data = kwargs.get('data')
         try:
             result = await self._producer.send(topic, self.serializer(data))
-            return True, await result
+            return True, result
         except kafkaError.RequestTimedOutError as e:
             return False, e
 
