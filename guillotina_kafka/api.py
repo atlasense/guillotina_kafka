@@ -1,5 +1,3 @@
-import json
-import asyncio
 from guillotina import configure
 from guillotina.api.service import Service
 from guillotina.component import get_adapter
