@@ -5,6 +5,7 @@ This package provides a guillotina addon to make your guillotina app
 support kafka. Essentially, it registers two utilities (singletons),
 one for producing to Kafka and another one to consume from Kafka.
 
+
 Producers
 ---------
 
