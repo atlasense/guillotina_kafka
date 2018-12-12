@@ -1,7 +1,7 @@
 from guillotina import configure
-from guillotina_kafka.consumers.template import ITemplateConsumer
-# from .util import *  # noqa
-# from .interfaces import *  # noqa
+from .producers import *  # noqa
+from .interfaces import *  # noqa
+from .utility import *  # noqa
 
 
 app_settings = {
@@ -23,5 +23,6 @@ def includeme(root):
     """
     custom application initialization here
     """
+    configure.scan('guillotina_kafka.utility')
+    configure.scan('guillotina_kafka.producers')
     configure.scan('guillotina_kafka.api')
-    configure.scan('guillotina_kafka.install')

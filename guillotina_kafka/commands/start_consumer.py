@@ -2,7 +2,7 @@ from guillotina import app_settings
 from guillotina.commands import Command
 from guillotina.component import get_adapter
 from guillotina.utils import resolve_dotted_name
-from guillotina_kafka.interfaces import Consumer
+from guillotina_kafka.consumers import Consumer
 from guillotina_kafka.consumers import ConsumerLookupError
 
 
@@ -36,7 +36,7 @@ class StartConsumerCommand(Command):
         )
 
         try:
-            consumer_interface = app_settings['kafka']['consumers'][arguments.name]
+            consumer_interface = app_settings['kafka']['consumers'][arguments.name]  # noqa
             consumer_interface = resolve_dotted_name(consumer_interface)
         except KeyError:
             raise ConsumerLookupError(
