@@ -29,8 +29,7 @@ async def test_utility(kafka_container, loop, container_requester):
 async def test_adapter(kafka_container, loop, container_requester):
     TEST_TOPIC = 'test-topic-2'
 
-    producer_utility = get_kafka_producer(loop=loop)
-    producer = WebApiSendMessage(producer_utility)
+    producer = WebApiSendMessage(loop=loop)
 
     for i in range(2):
         result = await producer.send(TEST_TOPIC, {'foo': 'bar'})

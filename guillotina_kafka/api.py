@@ -1,6 +1,5 @@
 from guillotina import configure
 from guillotina.api.service import Service
-from guillotina_kafka.utilities import get_kafka_producer
 from guillotina_kafka.producers import WebApiSendMessage
 
 
@@ -11,8 +10,7 @@ from guillotina_kafka.producers import WebApiSendMessage
 class producer_service(Service):
 
     async def __call__(self):
-        producer_utility = get_kafka_producer()
-        producer = WebApiSendMessage(producer_utility)
+        producer = WebApiSendMessage()
         topic = self.request.matchdict.get('topic')
         data = await self.request.json()
 

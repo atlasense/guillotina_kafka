@@ -2,19 +2,6 @@ from zope.interface import Attribute
 from zope.interface import Interface
 
 
-class IWebApiSendMessage(Interface):
-    async def send(self, topic, message):
-        pass
-
-
-class ICliSendMessage(Interface):
-    async def send_one(self, topic, message):
-        pass
-
-    async def send(self):
-        pass
-
-
 class IKafka(Interface):
     host = Attribute('Kafka brocker host')
     port = Attribute('Kafka brocker port')
