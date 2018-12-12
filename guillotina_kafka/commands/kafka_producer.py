@@ -1,6 +1,6 @@
 from guillotina.commands import Command
 from guillotina_kafka.producers import CliSendMessage
-from guillotina_kafka.utility import get_kafka_producer
+from guillotina_kafka.utilities import get_kafka_producer
 
 
 class SendMessageCommand(Command):

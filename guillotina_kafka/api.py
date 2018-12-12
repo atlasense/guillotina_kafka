@@ -1,8 +1,7 @@
 from guillotina import configure
 from guillotina.api.service import Service
-from guillotina.component import get_adapter
-from guillotina_kafka.utility import get_kafka_producer
-from guillotina_kafka.producers import IWebApiSendMessage
+from guillotina_kafka.utilities import get_kafka_producer
+from guillotina_kafka.producers import WebApiSendMessage
 
 
 @configure.service(
@@ -12,20 +11,17 @@ from guillotina_kafka.producers import IWebApiSendMessage
 class producer_service(Service):
 
     async def __call__(self):
-        producer = get_kafka_producer()
-        producer = get_adapter(producer, IWebApiSendMessage)
+        producer_utility = get_kafka_producer()
+        producer = WebApiSendMessage(producer_utility)
         topic = self.request.matchdict.get('topic')
         data = await self.request.json()
-        sent, result = await producer.send(topic, data)
 
-        if not sent:
-            result = dict(error=str(result))
-        else:
-            result = {
-                'topic': result.topic,
-                'partition': result.partition,
-                'offset': result.offset,
-                'timestamp': result.timestamp,
-            }
-
-        return {'sent': sent, 'result': result}
+        future = await producer.send(topic, data)
+        # Get kafka record metadata
+        record = await future
+        return {
+            'topic': record.topic,
+            'partition': record.partition,
+            'offset': record.offset,
+            'timestamp': record.timestamp,
+        }

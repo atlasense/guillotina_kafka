@@ -2,7 +2,7 @@ from guillotina import configure
 from guillotina_kafka.interfaces import IKafkaProducerUtility
 from guillotina_kafka.interfaces import ICliSendMessage
 from guillotina_kafka.interfaces import IWebApiSendMessage
-from guillotina_kafka.utility import KafkaProducerUtility
+from guillotina_kafka.utilities import KafkaProducerUtility
 
 import json
 

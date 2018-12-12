@@ -1,7 +1,7 @@
 from guillotina import configure
 from .producers import *  # noqa
 from .interfaces import *  # noqa
-from .utility import *  # noqa
+from .utilities import *  # noqa
 
 
 app_settings = {
@@ -24,5 +24,5 @@ def includeme(root):
     custom application initialization here
     """
     configure.scan('guillotina_kafka.producers')
-    configure.scan('guillotina_kafka.utility')
+    configure.scan('guillotina_kafka.utilities')
     configure.scan('guillotina_kafka.api')
