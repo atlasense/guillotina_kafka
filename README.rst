@@ -40,24 +40,25 @@ The adapter implementation could set group, topics and deserializer
 for the messages that is expected to read in each case. For instance::
 
   def IMyOwnConsumer(Interface):
-      pass
+      async def consume(self, **kwargs):
+          pass
 
   @configure.adapter(for_=IKafkaConsumer, provides=IMyOwnConsumer)
   class MyOwnConsumer:
     def __init__(self, consumer: KafkaConsumer):
         self.consumer = consumer
 
-    def do_my_onw_stuff(self, message):
+    async def do_my_onw_stuff(self, message):
         pass
 
-    async def run(self, **kwargs):
-        print('Started TemplateConsumer.')
+    async def consume(self, **kwargs):
+        print('Started My Own Consumer.')
         try:
             async for message in self.consumer:
-                self.do_my_own_stuff(message)
+                await self.do_my_own_stuff(message)
         finally:
             await self.consumer.stop()
-            print('Stoped TemplateConsumer.')
+            print('Stoped My Own Consumer')
 
 Then you can instantiate your own consumer by getting the
 corresponding adapter to the `KafkaConsumer` object. For instance::
@@ -75,7 +76,7 @@ corresponding adapter to the `KafkaConsumer` object. For instance::
   )
 
   own_consumer = get_adapter(consumer, IMyOwnConsumer)
-  await own_consumer.run()
+  await own_consumer.consume()
 
 
 Commands
@@ -102,7 +103,10 @@ Then you would be able to start a consumer with the following command::
   guillotina -c config.json kafka-consumer --name my_own --consumer-group test-group --topics topic1 topic2
 
 This makes it easy to write custom consumers and launch them with the
-generic command.
+generic command. The only requirement for this to work is to have the
+`consume` method implemented in your consumer class, and have the
+interface registered with a specified name (`my_own`) in the app's
+config settings.
 
 
 Installation and Configuration

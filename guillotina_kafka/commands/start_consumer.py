@@ -2,7 +2,7 @@ from guillotina import app_settings
 from guillotina.commands import Command
 from guillotina.component import get_adapter
 from guillotina.utils import resolve_dotted_name
-from guillotina_kafka.consumers import Consumer
+from guillotina_kafka.consumers import KafkaConsumer
 from guillotina_kafka.consumers import ConsumerLookupError
 
 
@@ -27,7 +27,7 @@ class StartConsumerCommand(Command):
         return parser
 
     def get_consumer(self, arguments, settings):
-        consumer = Consumer(
+        consumer = KafkaConsumer(
             arguments.name,
             arguments.consumer_group,
             arguments.topics

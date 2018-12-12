@@ -64,6 +64,8 @@ class TemplateConsumer:
 
     def __init__(self, consumer: KafkaConsumer):
         self.consumer = consumer
+        # You can overwrite the cosumern deserializer here
+        # self.consumer.deserializer = lambda x: x
 
     async def consume(self, **kwargs):
         print('Started TemplateConsumer.')
