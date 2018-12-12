@@ -17,10 +17,65 @@ You can get the producer utility as follows::
 As it is a singleton, this makes sure there is only one open
 connection to the Kafka cluster.
 
+You may then use it across your application to send messages to
+Kafka. Notice how you can specify the topic where you want to send the
+data to, and the serialization to be used::
+
+  await producer.send('my-topic',
+                      data={'foo': 'bar'},
+                      serializer=lambda x: json.dump(x).encode())
+
+The consumer, then, has to be aware of the deserialization needed to
+retrieve the data.
 
 Consumers
 ---------
 
+The `KafkaConsumer` base implementation is provided with this package,
+which keeps a connection open to the Kafka cluster. However, you may
+write custom adapters for it to extend the consumer behavior, such as
+it's done in the `ITemplateConsumer`.
+
+The adapter implementation could set group, topics and deserializer
+for the messages that is expected to read in each case. For instance::
+
+  def IMyOwnConsumer(Interface):
+      pass
+
+  @configure.adapter(for_=IKafkaConsumer, provides=IMyOwnConsumer)
+  class MyOwnConsumer:
+    def __init__(self, consumer: KafkaConsumer):
+        self.consumer = consumer
+
+    def do_my_onw_stuff(self, message):
+        pass
+
+    async def run(self, **kwargs):
+        print('Started TemplateConsumer.')
+        try:
+            async for message in self.consumer:
+                self.do_my_own_stuff(message)
+        finally:
+            await self.consumer.stop()
+            print('Stoped TemplateConsumer.')
+
+Then you can instantiate your own consumer by getting the
+corresponding adapter to the `KafkaConsumer` object. For instance::
+
+  from guillotina.component import get_adapter
+  from my_package.consumer import IMyOwnConsumer
+  from guillotina_kafka.consumers import KafkaConsumer
+  import json
+
+  consumer = KafkaConsumer(
+      'my-app',
+      topics=['mytopic'],
+      group='consumergroup',
+      deserializer=lamda x: json.load(x),
+  )
+
+  own_consumer = get_adapter(consumer, IMyOwnConsumer)
+  await own_consumer.run()
 
 
 Commands

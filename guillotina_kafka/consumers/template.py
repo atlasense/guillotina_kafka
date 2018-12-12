@@ -20,6 +20,9 @@ class KafkaConsumer:
         self.group = group
         self.topics = topics
         self.deserializer = deserializer
+        if not deserializer:
+            # Default deserializer
+            self.deserializer = lambda x: x.decode()
         self._consumer = None
         self.loop = loop
 
@@ -40,14 +43,15 @@ class KafkaConsumer:
         """
         if not self._consumer:
             await self.init_consumer()
-
         return await self._consumer.getone()
 
     async def __aiter__(self):
+        """Yield messages from consumed from Kafka
+        """
         return await self.init_consumer()
 
     async def stop(self):
-        return (await self._consumer.stop())
+        return await self._consumer.stop()
 
 
 class ITemplateConsumer(Interface):
@@ -63,7 +67,6 @@ class TemplateConsumer:
 
     async def consume(self, **kwargs):
         print('Started TemplateConsumer.')
-
         try:
             async for message in self.consumer:
                 print(message)

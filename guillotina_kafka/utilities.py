@@ -15,7 +15,6 @@ class KafkaProducerUtility:
         # Get kafka connection details from app settings
         self.host = app_settings['kafka']['host']
         self.port = app_settings['kafka']['port']
-        self.serializer = lambda msg: msg.encode()
         self.max_request_size = 104_857_600
         self.loop = loop
         self._producer = None
@@ -45,14 +44,29 @@ class KafkaProducerUtility:
         await self.producer.start()
         self._started = True
 
-    async def send(self, topic, data):
+    async def send(self, topic, data=None, serializer=None):
         """
-        If topic not specified, will use class attribute
+        :param topic: topic to send to
+        :param data: data to be sent
+        :param serializer: serialized function to apply to data
         """
+        if not data:
+            # Nothing to send
+            return
+
         if not self.is_ready:
             await self.start()
 
-        return await self.producer.send(topic, self.serializer(data))
+        # Apply custom serialization
+        serialized_data = data
+        if serializer:
+            serialized_data = serializer(data)
+
+        # Bytes-like eobject is required for aiokafka client
+        if not isinstance(serialized_data, bytes):
+            serialized_data = serialized_data.encode()
+
+        return await self.producer.send(topic, serialized_data)
 
     async def stop(self):
         await self.producer.stop()

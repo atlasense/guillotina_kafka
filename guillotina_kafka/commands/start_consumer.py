@@ -29,12 +29,9 @@ class StartConsumerCommand(Command):
     def get_consumer(self, arguments, settings):
         consumer = Consumer(
             arguments.name,
-            settings['kafka'].get('host', '127.0.0.1'),
-            settings['kafka'].get('port', 9092),
             arguments.consumer_group,
             arguments.topics
         )
-
         try:
             consumer_interface = app_settings['kafka']['consumers'][arguments.name]  # noqa
             consumer_interface = resolve_dotted_name(consumer_interface)
@@ -46,7 +43,6 @@ class StartConsumerCommand(Command):
                 'Could not resolve Interface path for this consumer '
                 'please check CONSUMER_INTERFACE_REGISTRY in the settings.'
             )
-
         return get_adapter(consumer, consumer_interface)
 
     async def run(self, arguments, settings, app):

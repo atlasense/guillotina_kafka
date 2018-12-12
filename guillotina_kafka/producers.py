@@ -37,13 +37,13 @@ class WebApiSendMessage:
     """Adapter that simplifies the producer interface to just allow
     sending messages to a arbitrary kafka topics
     """
-
     def __init__(self, util: KafkaProducerUtility):
         self.util = util
-        self.util.serializer = lambda msg: json.dumps(msg).encode()
+        self.serializer = lambda x: json.dumps(x).encode()
 
     async def send(self, topic, message):
         if not self.util.is_ready:
             await self.util.start()
 
-        return await self.util.send(topic=topic, data=message)
+        return await self.util.send(topic=topic, data=message,
+                                    serializer=self.serializer)
