@@ -6,7 +6,6 @@ from aiokafka import AIOKafkaProducer
 import asyncio
 
 
-
 @configure.utility(provides=IKafkaProducerUtility)
 class KafkaProducerUtility:
     """This defines the singleton that will hold the connection to kafka

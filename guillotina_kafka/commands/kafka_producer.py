@@ -1,7 +1,6 @@
 from guillotina.commands import Command
-from guillotina.component import get_adapter
-from guillotina_kafka.producer import Producer
-from guillotina_kafka.producer import ICliSendMessage
+from guillotina_kafka.producers import CliSendMessage
+from guillotina_kafka.utility import get_kafka_producer
 
 
 class SendMessageCommand(Command):
@@ -24,20 +23,16 @@ class SendMessageCommand(Command):
             '-i', '--interactive', action='store_true', default=False)
         return parser
 
-    async def send(self, arguments, settings):
-        producer = Producer(
-            settings['kafka'].get('host', '127.0.0.1'),
-            settings['kafka'].get('port', 9092),
-            arguments.topic,
-            max_request_size=arguments.max_size
-        )
-        producer = get_adapter(producer, ICliSendMessage)
+    async def send(self, arguments):
+        utility = get_kafka_producer()
+        utility.max_request_size = arguments.max_size
+        producer = CliSendMessage(utility)
         if arguments.interactive:
-            return (await producer.send())
+            return (await producer.send(arguments.topic))
         else:
-            return (await producer.send_one(arguments.data))
+            return (await producer.send_one(arguments.topic, arguments.data))
 
     async def run(self, arguments, settings, app):
-        result = await self.send(arguments, settings)
+        result = await self.send(arguments)
         if result is not None:
             print(result)

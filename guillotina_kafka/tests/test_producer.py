@@ -1,13 +1,13 @@
 from guillotina_kafka import get_kafka_producer
-from guillotina_kafka.producers import IWebApiSendMessage
-from guillotina.component import get_adapter
+from guillotina_kafka.producers import WebApiSendMessage
+
+from aiokafka.structs import RecordMetadata
 import asyncio
 
 
-TEST_TOPIC = 'test-topic'
-
-
 async def test_utility(kafka_container, loop, container_requester):
+    TEST_TOPIC = 'test-topic-1'
+
     producer_utility = get_kafka_producer(loop=loop)
     assert producer_utility.host
     assert producer_utility.port
@@ -19,12 +19,23 @@ async def test_utility(kafka_container, loop, container_requester):
     # The send function returns a future that will set when message is
     # processed
     assert isinstance(result, asyncio.Future)
+    record = await result
+    assert isinstance(record, RecordMetadata)
+    assert record.topic == TEST_TOPIC
     await producer_utility.stop()
     assert not producer_utility.is_ready
 
 
 async def test_adapter(kafka_container, loop, container_requester):
+    TEST_TOPIC = 'test-topic-2'
+
     producer_utility = get_kafka_producer(loop=loop)
-    producer = get_adapter(producer_utility, IWebApiSendMessage)
-    import pdb; pdb.set_trace()
-    pass
+    producer = WebApiSendMessage(producer_utility)
+
+    for i in range(2):
+        result = await producer.send(TEST_TOPIC, {'foo': 'bar'})
+        assert isinstance(result, asyncio.Future)
+        record = await result
+        assert isinstance(record, RecordMetadata)
+        assert record.topic == TEST_TOPIC
+        assert record.offset == i

@@ -1,7 +1,6 @@
 from guillotina import app_settings
 from guillotina import testing
-from cassettedeck.deck import CassetteDeck
-from cassettedeck.service import BaseService
+
 import pytest
 
 
