@@ -11,6 +11,12 @@ install:
   - pip install -e .[test]
   - pip install flake8 codecov
   - sleep 5
+before_script:
+  - docker pull spotify/kafka
+  - docker run -p 9999:9092 --name kafka -d spotify/kafka
+  - sleep 10
+  - docker ps -a
+  - docker exec kafka /opt/kafka_2.11-0.10.1.0/bin/kafka-topics.sh --create --zookeeper localhost:2181 --topic T-UserAction --replication-factor 1 --partitions 1
 script:
   - flake8 guillotina_kafka --config=setup.cfg
   - pytest -s --cov=guillotina_kafka -s --tb=native -v --cov-report term-missing --cov-append guillotina_kafka
