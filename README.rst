@@ -81,6 +81,29 @@ corresponding adapter to the `KafkaConsumer` object. For instance::
 Commands
 --------
 
+This package provides your guillotina application with the
+`kafka-consumer` command, which will look into the app configuration
+and load the corresponding consumer interface.
+
+For instance, if we had registered our own consumer in the app settings config.json::
+
+  app_settings = {
+      "kafka": {
+          "host": "localhost",
+          "port": 9092,
+          "consumers": {
+              "my_own": "my_package.consumer.IMyOwnConsumer"
+          }
+      }
+  }
+
+Then you would be able to start a consumer with the following command::
+
+  guillotina -c config.json kafka-consumer --name my_own --consumer-group test-group --topics topic1 topic2
+
+This makes it easy to write custom consumers and launch them with the
+generic command.
+
 
 Installation and Configuration
 ------------------------------
