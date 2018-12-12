@@ -1,6 +1,5 @@
 from guillotina import app_settings
 from guillotina import testing
-from guillotina_kafka.util import get_kafka_producer
 from cassettedeck.deck import CassetteDeck
 from cassettedeck.service import BaseService
 import pytest
