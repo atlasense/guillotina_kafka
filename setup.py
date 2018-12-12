@@ -34,7 +34,6 @@ setup(
             'pytest-cov',
             'coverage>=4.4',
             'pytest-docker-fixtures>=1.2.7',
-            'cassettedeck==1.1.12',
         ]
     },
     classifiers=[],
