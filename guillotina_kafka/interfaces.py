@@ -2,10 +2,6 @@ from zope.interface import Attribute
 from zope.interface import Interface
 
 
-class IKafkaProducerUtility(Interface):
-    pass
-
-
 class IWebApiSendMessage(Interface):
     async def send(self, topic, message):
         pass
@@ -20,12 +16,16 @@ class ICliSendMessage(Interface):
 
 
 class IKafka(Interface):
-    application_name = Attribute('Name of the application')
     host = Attribute('Kafka brocker host')
     port = Attribute('Kafka brocker port')
 
 
-class IConsumer(IKafka):
+class IKafkaProducerUtility(IKafka):
+    pass
+
+
+class IKafkaConsumer(IKafka):
+    application_name = Attribute('Name of the application')
     topics = Attribute('Kafka topics to consume from.')
     group = Attribute(
         'Consumer group, used by consumers to '

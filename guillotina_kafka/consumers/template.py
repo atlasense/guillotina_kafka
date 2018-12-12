@@ -1,7 +1,8 @@
 import logging
 from guillotina import configure
+from guillotina import app_settings
 from zope.interface import Interface
-from guillotina_kafka.interfaces import IConsumer
+from guillotina_kafka.interfaces import IKafkaConsumer
 from aiokafka import AIOKafkaConsumer
 from zope.interface import implementer
 import asyncio
@@ -9,32 +10,38 @@ import asyncio
 logger = logging.getLogger('TemplateConsumer')
 
 
-@implementer(IConsumer)
-class Consumer(object):
-
-    def __init__(
-            self, application_name, host, port,
-            group, topics, deserializer=None):
-
+@implementer(IKafkaConsumer)
+class KafkaConsumer:
+    def __init__(self, application_name, group=None, topics=None,
+                 deserializer=None, loop=None):
+        self.host = app_settings['kafka']['host']
+        self.port = app_settings['kafka']['port']
         self.application_name = application_name
-        self.host = host
-        self.port = port
         self.group = group
         self.topics = topics
         self.deserializer = deserializer
         self._consumer = None
+        self.loop = loop
 
     async def init_consumer(self):
         if self._consumer is None:
             self._consumer = AIOKafkaConsumer(
                 *self.topics, group_id=self.group,
-                loop=asyncio.get_event_loop(),
+                loop=self.loop or asyncio.get_event_loop(),
                 bootstrap_servers=f'{self.host}:{self.port}',
                 value_deserializer=self.deserializer,
                 auto_offset_reset='earliest'
             )
             await self._consumer.start()
         return self._consumer
+
+    async def getone(self):
+        """Reads only one message
+        """
+        if not self._consumer:
+            await self.init_consumer()
+
+        return await self._consumer.getone()
 
     async def __aiter__(self):
         return await self.init_consumer()
@@ -48,10 +55,10 @@ class ITemplateConsumer(Interface):
         pass
 
 
-@configure.adapter(for_=IConsumer, provides=ITemplateConsumer)
+@configure.adapter(for_=IKafkaConsumer, provides=ITemplateConsumer)
 class TemplateConsumer:
 
-    def __init__(self, consumer: Consumer):
+    def __init__(self, consumer: KafkaConsumer):
         self.consumer = consumer
 
     async def consume(self, **kwargs):
