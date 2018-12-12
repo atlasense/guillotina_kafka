@@ -22,13 +22,6 @@ testing.configure_with(base_settings_configurator)
 
 
 @pytest.fixture('function')
-async def kafka_consumer(loop, kafka_container):
-    # Create consumer and pass in pytest loop
-    consumer = None
-    yield consumer
-
-
-@pytest.fixture('function')
 def kafka_container(kafka):
     app_settings.setdefault('kafka', {})
     app_settings['kafka'].update({
