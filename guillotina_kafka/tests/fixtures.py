@@ -39,7 +39,7 @@ def kafka_container(kafka):
         topics_list = check_output([topics_list_cmd], shell=True)
         topics_list = topics_list.decode('utf-8')
         for topic in topics_list:
-            topic = topic.decode('utf-8').splitlines()[-1]
+            topic = topic.splitlines()[-1]
             if topic != "__consumer_offsets":
                 subprocess.Popen(
                     [f"docker exec -it {image_id} {cmd_path} --zookeeper 127.0.0.1:2181 --delete --topic {topic}"],  # noqa
