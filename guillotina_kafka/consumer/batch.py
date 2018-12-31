@@ -2,24 +2,21 @@ import uuid
 import asyncio
 from guillotina import configure
 from zope.interface import implementer
+from guillotina_kafka.consumer import Consumer
 from guillotina_kafka.interfaces import IConsumer
 from guillotina_kafka.interfaces import IConsumerUtility
-
 
 from aiokafka import AIOKafkaProducer, AIOKafkaConsumer
 from aiokafka.errors import KafkaError, KafkaTimeoutError
 
 
 @implementer(IConsumer)
-class BatchConsumer(object):
+class BatchConsumer(Consumer):
 
     def __init__(
             self, topics, loop=None,
             worker=lambda data: print(data), **kwargs):
-
-        self.topics = topics
-        self.worker = worker
-        self._consumer = None
+        super().__init__(topics, loop=loop, worker=worker, **kwargs)
 
         self.config = {
             **kwargs,
@@ -27,20 +24,6 @@ class BatchConsumer(object):
             'group_id': str(uuid.uuid4()),
             'loop': loop or asyncio.get_event_loop()
         }
-
-    async def init(self):
-        if self._consumer is None:
-            self._consumer = AIOKafkaConsumer(
-                *self.topics, **self.config
-            )
-            await self._consumer.start()
-
-    @property
-    def is_ready(self):
-        return self._consumer is not None
-
-    async def stop(self):
-        return await self._consumer.stop()
 
     async def take(self, max_records, within=60*1000):
         while True:

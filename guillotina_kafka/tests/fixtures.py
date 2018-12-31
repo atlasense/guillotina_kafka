@@ -1,8 +1,13 @@
+from guillotina import app_settings
 from guillotina import testing
-from guillotina.tests.fixtures import ContainerRequesterAsyncContextManager
 
-import json
 import pytest
+
+
+base_kafka_settings = {
+    "host": "localhost",
+    "port": 9092,
+}
 
 
 def base_settings_configurator(settings):
@@ -10,24 +15,17 @@ def base_settings_configurator(settings):
         settings['applications'].append('guillotina_kafka')
     else:
         settings['applications'] = ['guillotina_kafka']
+    settings['kafka'] = base_kafka_settings
 
 
 testing.configure_with(base_settings_configurator)
 
 
-class guillotina_kafka_Requester(ContainerRequesterAsyncContextManager):  # noqa
-
-    async def __aenter__(self):
-        await super().__aenter__()
-        resp = await self.requester(
-            'POST', '/db/guillotina/@addons',
-            data=json.dumps({
-                'id': 'guillotina_kafka'
-            })
-        )
-        return self.requester
-
-
-@pytest.fixture(scope='function')
-async def guillotina_kafka_requester(guillotina):
-    return guillotina_kafka_Requester(guillotina)
+@pytest.fixture('function')
+def kafka_container(kafka):
+    app_settings.setdefault('kafka', {})
+    app_settings['kafka'].update({
+        "host": kafka[0],
+        "port": kafka[1],
+    })
+    yield kafka

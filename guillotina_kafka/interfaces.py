@@ -1,7 +1,7 @@
 from zope.interface import Interface
 
 
-class IKafak(Interface):
+class IKafka(Interface):
     async def init():
         pass
 
@@ -12,7 +12,10 @@ class IKafak(Interface):
         pass
 
 
-class IProducer(IKafak):
+class IProducer(IKafka):
+    pass
+
+class IKafkaProducerUtility(IKafka):
     pass
 
 
@@ -21,7 +24,7 @@ class IProducerUtility(Interface):
         pass
 
 
-class IConsumer(IKafak):
+class IConsumer(IKafka):
     pass
 
 

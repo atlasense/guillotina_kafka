@@ -1,4 +1,3 @@
-from guillotina import app_settings
 from guillotina.commands import Command
 from guillotina.component import get_adapter
 from guillotina.utils import resolve_dotted_name
@@ -62,7 +61,6 @@ class StartConsumerCommand(Command):
             )
         except:
             raise InvalidConsumerType(f'{arguments.consumer_type} is not valid.')
-
 
         return get_adapter(consumer, IConsumerUtility, name=arguments.consumer_type)
 
