@@ -45,9 +45,6 @@
     "kafka": {
         "host": "localhost",
         "port": 9092,
-        "producers": {
-            "default": null
-        },
         "consumer_workers": {
             "default": "guillotina_kafka.consumer.default_worker",
             "es": "guillotina_kafka.consumer.es_worker"

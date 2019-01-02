@@ -1,2 +1,0 @@
-class ConsumerLookupError(Exception):
-    pass
