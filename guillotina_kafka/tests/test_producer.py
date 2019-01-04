@@ -6,15 +6,19 @@ from guillotina.component import get_adapter
 from aiokafka.structs import RecordMetadata
 from guillotina_kafka import get_kafka_producer
 from guillotina_kafka.producer import GetKafkaProducer
-from guillotina_kafka.producer.generic import GenericProducer
 
 pytestmark = pytest.mark.asyncio
 
 
-# async def test_producer_adapter(loop, kafka_container):
-#     TEST_TOPIC = 'test-topic'
-#     producer = GetKafkaProducer('json', app_settings)
-#     result = await producer.send(TEST_TOPIC, {'foo': 'bar'})
+async def test_producer_adapter(kafka_container, event_loop, container_requester):
+    TEST_TOPIC = 'test-topic'
+    producer = GetKafkaProducer('json', app_settings)
+    result = await producer.send(TEST_TOPIC, {'foo': 'bar'})
+    assert isinstance(result, tuple)
+    assert result[0] is True
+    assert isinstance(result[1], RecordMetadata)
+    assert result[1].topic == TEST_TOPIC
+    await producer.stop()
 
 
 async def test_producer_utility(kafka_container, event_loop, container_requester):

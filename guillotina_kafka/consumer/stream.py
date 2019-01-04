@@ -1,14 +1,13 @@
-import uuid
-import asyncio
 from guillotina import configure
 from zope.interface import implementer
 from guillotina_kafka.consumer import Consumer
 from guillotina_kafka.interfaces import IConsumer
 from guillotina_kafka.interfaces import IConsumerUtility
 
-from aiokafka import AIOKafkaProducer, AIOKafkaConsumer
-from aiokafka.errors import KafkaError, KafkaTimeoutError
 from aiokafka import TopicPartition
+from aiokafka.errors import KafkaError
+from aiokafka.errors import KafkaTimeoutError
+from aiokafka.errors import IllegalStateError
 
 
 @implementer(IConsumer)
@@ -19,7 +18,11 @@ class StreamConsumer(Consumer):
         for topic in self.topics:
             pid = self._consumer.partitions_for_topic(topic).pop()
             tp = TopicPartition(topic, pid)
-            position = await self._consumer.position(tp)
+            try:
+                position = await self._consumer.position(tp)
+            except IllegalStateError:
+                continue
+            
             if position > 0:
                 self._consumer.seek(tp, position + step)
 
@@ -41,7 +44,6 @@ class StreamConsumerUtility:
 
         try:
             print('Starting StreamConsumerUtility ...')
-            # import pdb; pdb.set_trace()
             await self.consumer.seek(step=-1) # Move to the previous offset
             async for message in self.consumer:
                 _ = await self.consumer.worker(message, arguments=arguments, settings=settings)
