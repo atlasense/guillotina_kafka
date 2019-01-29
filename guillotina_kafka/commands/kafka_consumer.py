@@ -31,6 +31,10 @@ class StartConsumerCommand(Command):
             '--consumer-group', type=str, help='Application consumer group.'
         )
         parser.add_argument(
+            '--api-version', type=str,
+            default='auto', help='Kafka server api version.'
+        )
+        parser.add_argument(
             '--take', type=int
         )
         parser.add_argument(
@@ -57,6 +61,7 @@ class StartConsumerCommand(Command):
                 arguments.topics,
                 worker=consumer_worker,
                 group_id=arguments.consumer_group,
+                api_version=arguments.api_version,
                 bootstrap_servers=[f"{settings['kafka']['host']}:{settings['kafka']['port']}"]
             )
         except:
