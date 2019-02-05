@@ -33,6 +33,7 @@ class SendMessageCommand(Command):
         )
         producer = get_kafka_producer()
         await producer.setup(
+            bootstrap_servers=f"{settings['kafka']['host']}:{settings['kafka']['port']}",
             value_serializer=serializer,
             api_version=arguments.api_version
         )
