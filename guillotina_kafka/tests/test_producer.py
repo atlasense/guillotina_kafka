@@ -11,7 +11,7 @@ pytestmark = pytest.mark.asyncio
 
 async def test_producer_utility(kafka_container, event_loop, container_requester):
     TEST_TOPIC = 'test-topic'
-    BOOTSTRAP_SERVERS = f"{app_settings['kafka']['host']}:{app_settings['kafka']['port']}"
+    BOOTSTRAP_SERVERS = app_settings['kafka']['brokers']
     producer = get_kafka_producer()
     assert not producer.is_ready
 

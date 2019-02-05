@@ -62,7 +62,7 @@ class StartConsumerCommand(Command):
                 worker=consumer_worker,
                 group_id=arguments.consumer_group,
                 api_version=arguments.api_version,
-                bootstrap_servers=[f"{settings['kafka']['host']}:{settings['kafka']['port']}"]
+                bootstrap_servers=settings['kafka']['brokers']
             )
         except:
             raise InvalidConsumerType(f'{arguments.consumer_type} is not valid.')
