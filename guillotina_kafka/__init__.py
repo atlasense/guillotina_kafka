@@ -10,8 +10,13 @@ app_settings = {
         "start-consumer": "guillotina_kafka.commands.kafka_consumer.StartConsumerCommand"
     },   
     "kafka": {
-        "host": "localhost",
-        "port": 9092
+        "brokers": [
+            "localhost:9092"
+        ],
+        "consumer_workers": {
+            "default": "guillotina_kafka.consumer.default_worker",
+            "es": "guillotina_kafka.consumer.es_worker"
+        }
     }
 }
 

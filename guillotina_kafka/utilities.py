@@ -14,12 +14,10 @@ class KafkaProducerUtility:
     """
     def __init__(self, loop=None):
         # Get kafka connection details from app settings
-        self.host = app_settings['kafka']['host']
-        self.port = app_settings['kafka']['port']
         self.loop = loop
         self.producer = None
         self.config = {
-            'bootstrap_servers': f'{self.host}:{self.port}',
+            'bootstrap_servers': app_settings['kafka']['brokers'],
             'value_serializer': lambda data: json.dumps(data).encode('utf-8')
         }
 

@@ -33,7 +33,7 @@ class GetKafkaProducer:
             serializer, lambda data: data.encode('utf-8')
         )
         self.producer = GenericProducer(
-            bootstrap_servers=f"{settings['kafka']['host']}:{settings['kafka']['port']}",
+            bootstrap_servers=settings['kafka']['brokers'],
             value_serializer=serializer, **kwargs
         )
         self.producer = get_adapter(self.producer, IProducerUtility, name='generic')

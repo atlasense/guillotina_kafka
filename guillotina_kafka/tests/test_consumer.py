@@ -13,7 +13,7 @@ async def test_stream_consumer(kafka_container, event_loop, container_requester)
 
     TEST_TOPICS = ['test-topic-1', 'test-topic-2']
     TEST_GROUP = 'test-group'
-    BOOTSTRAP_SERVERS=[f"{app_settings['kafka']['host']}:{app_settings['kafka']['port']}"]
+    BOOTSTRAP_SERVERS=app_settings['kafka']['brokers']
 
     producer = GetKafkaProducer('bytes', app_settings)
 

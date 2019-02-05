@@ -1,12 +1,10 @@
+import pytest
 from guillotina import app_settings
 from guillotina import testing
 
-import pytest
-
 
 base_kafka_settings = {
-    "host": "localhost",
-    "port": 9092,
+    "brokers": ["localhost:9092"]
 }
 
 
@@ -25,7 +23,6 @@ testing.configure_with(base_settings_configurator)
 def kafka_container(kafka):
     app_settings.setdefault('kafka', {})
     app_settings['kafka'].update({
-        "host": kafka[0],
-        "port": kafka[1],
+        "brokers": [f"{kafka[0]}:{kafka[1]}"]
     })
     yield kafka
