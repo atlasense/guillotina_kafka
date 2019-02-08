@@ -42,15 +42,33 @@ class StartConsumerCommand(Command):
         )
         return parser
 
+    def get_worker(self, name, settings):
+        for worker in settings['kafka']['consumer']['workers']:
+            if name == worker['name']:
+                worker = {
+                    **worker, "topics": list({
+                        *worker.get('topics', []),
+                        *settings['kafka']['consumer'].get('topics', [])
+                    })
+                }
+                return worker
+        return {}
+
     def get_consumer(self, arguments, settings):
+
+        worker = self.get_worker(arguments.consumer_worker, settings)
+        if not worker:
+            raise ConsumerWorkerLookupError(
+                'Worker has not been registered.'
+            )
 
         try:
             consumer_worker = resolve_dotted_name(
-                settings['kafka']['consumer_workers'][arguments.consumer_worker]
+                worker['path']
             )
         except:
             raise ConsumerWorkerLookupError(
-                f'Worker has not been registered.'
+                'Worker has not been registered.'
             )
 
         try:
@@ -58,9 +76,9 @@ class StartConsumerCommand(Command):
                 'batch': BatchConsumer,
                 'stream': StreamConsumer,
             }[arguments.consumer_type](
-                arguments.topics,
+                arguments.topics or worker['topics'],
                 worker=consumer_worker,
-                group_id=arguments.consumer_group,
+                group_id=arguments.consumer_group or worker['group'],
                 api_version=arguments.api_version,
                 bootstrap_servers=settings['kafka']['brokers']
             )
