@@ -43,6 +43,7 @@
         "algorithm": "HS256"
     },
     "kafka": {
+        "topic_prefix": "dev-",
         "brokers": [
             "localhost:9092"
         ],

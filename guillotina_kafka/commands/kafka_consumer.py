@@ -71,6 +71,13 @@ class StartConsumerCommand(Command):
                 'Worker has not been registered.'
             )
 
+        topic_prefix = settings['kafka'].get('topic_prefix')
+        if settings['kafka'].get('topic_prefix'):
+            worker['topics'] = [
+                f'{topic_prefix}{topic}'
+                for topic in worker['topics']
+            ]
+
         try:
             consumer = {
                 'batch': BatchConsumer,
