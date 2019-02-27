@@ -13,18 +13,27 @@ from aiokafka.errors import IllegalStateError
 @implementer(IConsumer)
 class StreamConsumer(Consumer):
 
+    async def _seek(self, topic, step):
+        partition = self._consumer.partitions_for_topic(topic)
+        if not partition:
+            return
+        pid = partition.pop()
+        tp = TopicPartition(topic, pid)
+
+        try:
+            position = await self._consumer.position(tp)
+        except IllegalStateError:
+            pass
+
+        if position > 0:
+            self._consumer.seek(tp, position + step)
+
     async def seek(self, step=-1):
         await self.init()
+        if self.has_regex_topic:
+            return
         for topic in self.topics:
-            pid = self._consumer.partitions_for_topic(topic).pop()
-            tp = TopicPartition(topic, pid)
-            try:
-                position = await self._consumer.position(tp)
-            except IllegalStateError:
-                continue
-            
-            if position > 0:
-                self._consumer.seek(tp, position + step)
+            await self._seek(topic, step)
 
     async def __aiter__(self):
         return await self.init()
