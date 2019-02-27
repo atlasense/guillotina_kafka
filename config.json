@@ -43,12 +43,24 @@
         "algorithm": "HS256"
     },
     "kafka": {
+        "topic_prefix": "dev-",
         "brokers": [
             "localhost:9092"
         ],
-        "consumer_workers": {
-            "default": "guillotina_kafka.consumer.default_worker",
-            "es": "guillotina_kafka.consumer.es_worker"
+        "consumer": {
+            "workers": [
+                {
+                    "name": "default",
+                    "path": "guillotina_kafka.consumer.default_worker"
+                },
+                {
+                    "name": "es",
+                    "group": "es-group",
+                    "path": "guillotina_kafka.consumer.es_worker",
+                    "topics": ["es-topic"]
+                }
+            ],
+            "topics": ["test-topic"]
         }
     }
 }

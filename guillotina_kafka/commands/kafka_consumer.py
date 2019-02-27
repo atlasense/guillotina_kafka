@@ -24,6 +24,11 @@ class StartConsumerCommand(Command):
             help='Kafka topics to consume from', type=str
         )
         parser.add_argument(
+            '--regex-topic', type=str,
+            help='Pattern to match available topics. You must provide '
+                    'either topics or pattern, but not both.'
+        )
+        parser.add_argument(
             '--consumer-worker', type=str, default='default',
             help='Application consumer that will consume messages from topics.'
         )
@@ -42,25 +47,61 @@ class StartConsumerCommand(Command):
         )
         return parser
 
+    def get_worker(self, name, settings):
+        for worker in settings['kafka']['consumer']['workers']:
+            if name == worker['name']:
+                worker = {
+                    **worker, "topics": list({
+                        *worker.get('topics', []),
+                        *settings['kafka']['consumer'].get('topics', [])
+                    })
+                }
+                return worker
+        return {}
+
     def get_consumer(self, arguments, settings):
+
+        worker = self.get_worker(arguments.consumer_worker, settings)
+        if not worker:
+            raise ConsumerWorkerLookupError(
+                'Worker has not been registered.'
+            )
 
         try:
             consumer_worker = resolve_dotted_name(
-                settings['kafka']['consumer_workers'][arguments.consumer_worker]
+                worker['path']
             )
         except:
             raise ConsumerWorkerLookupError(
-                f'Worker has not been registered.'
+                'Worker has not been registered.'
             )
+
+        topic_prefix = settings['kafka'].get('topic_prefix')
+        if topic_prefix:
+            worker['topics'] = [
+                f'{topic_prefix}{topic}'
+                for topic in worker['topics']
+            ]
+
+        # cli_topic has priority over worker['regex_topic']
+        # which has priority over worker['topics']
+
+        cli_topic = arguments.topics
+        settings_topics = worker['topics']
+        if worker.get('regex_topic'):
+            settings_topics = f"{topic_prefix}{worker['regex_topic']}"
+
+        if arguments.regex_topic:
+            cli_topic = arguments.regex_topic
 
         try:
             consumer = {
                 'batch': BatchConsumer,
                 'stream': StreamConsumer,
             }[arguments.consumer_type](
-                arguments.topics,
+                cli_topic or settings_topics,
                 worker=consumer_worker,
-                group_id=arguments.consumer_group,
+                group_id=arguments.consumer_group or worker['group'],
                 api_version=arguments.api_version,
                 bootstrap_servers=settings['kafka']['brokers']
             )

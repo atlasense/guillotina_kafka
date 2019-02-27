@@ -7,9 +7,15 @@ try:
 except IOError:
     README = None
 
+try:
+    VERSION = open('VERSION').read().strip('\n')
+except IOError:
+    VERSION = None
+
+
 setup(
     name='guillotina_kafka',
-    version="2.0.1",
+    version=VERSION,
     description='Guillotina Kafka add-on',
     long_description=README,
     install_requires=[

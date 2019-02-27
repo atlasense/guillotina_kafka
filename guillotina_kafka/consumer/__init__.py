@@ -32,16 +32,23 @@ class Consumer(object):
 
         self.config = {
             'loop': loop or asyncio.get_event_loop(),
+            'metadata_max_age_ms': 5000,
             **kwargs
         }
 
     async def init(self):
         if self._consumer is None:
-            self._consumer = AIOKafkaConsumer(
-                *self.topics, **self.config
-            )
+            self._consumer = AIOKafkaConsumer(**self.config)
+            if isinstance(self.topics, str):
+                self._consumer.subscribe(pattern=self.topics)
+            if isinstance(self.topics, (list, set, tuple)):
+                self._consumer.subscribe(topics=self.topics)
             await self._consumer.start()
         return self._consumer
+
+    @property
+    def has_regex_topic(self):
+        return isinstance(self.topics, str)
 
     @property
     def is_ready(self):
