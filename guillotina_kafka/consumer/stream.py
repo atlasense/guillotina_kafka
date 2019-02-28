@@ -23,7 +23,7 @@ class StreamConsumer(Consumer):
         try:
             position = await self._consumer.position(tp)
         except IllegalStateError:
-            pass
+            position = 0
 
         if position > 0:
             self._consumer.seek(tp, position + step)
