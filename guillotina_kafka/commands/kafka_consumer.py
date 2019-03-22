@@ -8,6 +8,10 @@ from guillotina_kafka.consumer.stream import StreamConsumer
 from guillotina_kafka.interfaces import IConsumerUtility
 
 import asyncio
+import logging
+import sys
+
+logger = logging.getLogger(__name__)
 
 
 class StartConsumerCommand(ServerCommand):
@@ -111,10 +115,21 @@ class StartConsumerCommand(ServerCommand):
 
         return get_adapter(consumer, IConsumerUtility, name=arguments.consumer_type)
 
+    async def run_consumer(self, consumer, arguments, settings):
+        '''
+        Run the consumer in a way that makes sure we exit
+        if the consumer throws an error
+        '''
+        try:
+            await consumer.consume(arguments, settings)
+        except Exception:
+            logger.error('Error running consumer', exc_info=True)
+            sys.exit(1)
+
     def run(self, arguments, settings, app):
         consumer = self.get_consumer(arguments, settings)
         loop = self.get_loop()
         asyncio.ensure_future(
-            consumer.consume(arguments, settings),
+            self.run_consumer(consumer, arguments, settings),
             loop=loop)
         return super().run(arguments, settings, app)
