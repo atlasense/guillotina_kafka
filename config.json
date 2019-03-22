@@ -51,6 +51,7 @@
             "workers": [
                 {
                     "name": "default",
+                    "group": "default",
                     "path": "guillotina_kafka.consumer.default_worker"
                 },
                 {

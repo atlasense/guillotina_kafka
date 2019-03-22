@@ -1,15 +1,16 @@
-from guillotina.commands import Command
+from guillotina.commands.server import ServerCommand
 from guillotina.component import get_adapter
 from guillotina.utils import resolve_dotted_name
-from guillotina_kafka.interfaces import IConsumerUtility
+from guillotina_kafka.consumer import ConsumerWorkerLookupError
+from guillotina_kafka.consumer import InvalidConsumerType
 from guillotina_kafka.consumer.batch import BatchConsumer
 from guillotina_kafka.consumer.stream import StreamConsumer
-from guillotina_kafka.consumer import (
-    ConsumerWorkerLookupError, InvalidConsumerType)
+from guillotina_kafka.interfaces import IConsumerUtility
+
+import asyncio
 
 
-
-class StartConsumerCommand(Command):
+class StartConsumerCommand(ServerCommand):
 
     description = 'Start Kafka consumer'
 
@@ -101,15 +102,19 @@ class StartConsumerCommand(Command):
             }[arguments.consumer_type](
                 cli_topic or settings_topics,
                 worker=consumer_worker,
-                group_id=arguments.consumer_group or worker['group'],
+                group_id=arguments.consumer_group or worker.get('group', 'default'),
                 api_version=arguments.api_version,
                 bootstrap_servers=settings['kafka']['brokers']
             )
-        except:
+        except KeyError:
             raise InvalidConsumerType(f'{arguments.consumer_type} is not valid.')
 
         return get_adapter(consumer, IConsumerUtility, name=arguments.consumer_type)
 
-    async def run(self, arguments, settings, app):
+    def run(self, arguments, settings, app):
         consumer = self.get_consumer(arguments, settings)
-        await consumer.consume(arguments, settings)
+        loop = self.get_loop()
+        asyncio.ensure_future(
+            consumer.consume(arguments, settings),
+            loop=loop)
+        return super().run(arguments, settings, app)
