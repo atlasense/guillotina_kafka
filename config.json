@@ -52,7 +52,7 @@
                 {
                     "name": "default",
                     "group": "default",
-                    "topics": ["oumar-topic"],
+                    "topics": ["default-topic"],
                     "path": "guillotina_kafka.consumer.default_worker"
                 },
                 {
