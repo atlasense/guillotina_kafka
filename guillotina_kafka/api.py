@@ -5,6 +5,7 @@ from guillotina import configure
 from guillotina import app_settings
 from guillotina.api.service import Service
 from guillotina_kafka.producer import GetKafkaProducer
+from guillotina_kafka.consumer import KAFKA_CONSUMER_STAT
 
 
 producer = None
@@ -12,7 +13,7 @@ producer = None
 @configure.service(
     method='POST',
     name='@kafka-producer/{topic}',
-    permission='guillotina.AccessContent')
+    permission='guillotina.ModifyContent')
 class producer_service(Service):
 
     async def __call__(self):
@@ -34,3 +35,13 @@ class producer_service(Service):
             }
 
         return {'sent': sent, 'result': result}
+
+
+@configure.service(
+    method='GET',
+    name='@consumer-stat',
+    permission='guillotina.AccessContent')
+class consumer_stat(Service):
+
+    async def __call__(self):
+        return KAFKA_CONSUMER_STAT
