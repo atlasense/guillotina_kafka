@@ -13,7 +13,7 @@ producer = None
 @configure.service(
     method='POST',
     name='@kafka-producer/{topic}',
-    permission='guillotina.AccessContent')
+    permission='guillotina.ModifyContent')
 class producer_service(Service):
 
     async def __call__(self):
