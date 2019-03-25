@@ -6,10 +6,10 @@ from aiokafka import AIOKafkaConsumer
 KAFKA_CONSUMER_STAT = {}
 
 def counter():
-    COUNTERS = {}
+    counters = {}
     def inc(name, i):
-        COUNTERS[name] = COUNTERS.setdefault(name, 0) + i
-        return COUNTERS[name]
+        counters[name] = counters.setdefault(name, 0) + i
+        return counters[name]
     return inc
 
 
