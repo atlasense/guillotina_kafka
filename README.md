@@ -8,7 +8,7 @@ Essentially, it provides two APIs, one for producing to Kafka and another one to
 Producers
 ---------
 
-You can get the producer utility as follows::
+You can get the producer utility as follows:
 ```python
 from guillotina_kafka.utilities import get_kafka_producer
 producer = get_kafka_producer()
@@ -29,7 +29,7 @@ Notice how you can specify the topic where you want to send the data to.
 ```python
 await producer.send('my-topic', value={'foo': 'bar'})
 ```
-*The consumer, then, has to be aware of the deserialization needed toretrieve the data.
+*The consumer, then, has to be aware of the deserialization needed to retrieve the data.
 
 
 Consumers
@@ -71,8 +71,8 @@ Installation and Configuration
     }
 }
 ```
-With this config `my_consumer` will be consuming data from `my-topic` and `default-topic`.  
-It will also colaborate with any consumer using `default_group` as a consumer group.  
+With this config, `my_consumer` will be consuming data from `my-topic` and `default-topic`.  
+It will also collaborate with any consumer using `default_group` as a consumer group.  
 You can find more info about `kafka` consumer [here](https://kafka.apache.org/documentation/#theconsumer)
 
 *You can also define a regular expression as a topic. 
@@ -105,4 +105,4 @@ guillotina -c config.json start-consumer --consumer-type=stream --consumer-worke
 ```
 
 Run `guillotina -c config.json start-consumer --help` to have the list of available options.  
-Important note the option passed trought the command line will overwide the coresponding configurations in config.json
+Important note, options passed through the command line will override the corresponding configurations in config.json
