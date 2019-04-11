@@ -1,15 +1,15 @@
-from guillotina.commands.server import ServerCommand
-from guillotina.component import get_adapter
-from guillotina.utils import resolve_dotted_name
-from guillotina_kafka.consumer import ConsumerWorkerLookupError
-from guillotina_kafka.consumer import InvalidConsumerType
-from guillotina_kafka.consumer.batch import BatchConsumer
-from guillotina_kafka.consumer.stream import StreamConsumer
-from guillotina_kafka.interfaces import IConsumerUtility
-
+import sys
 import asyncio
 import logging
-import sys
+from guillotina.component import get_adapter
+from guillotina.utils import resolve_dotted_name
+from guillotina.commands.server import ServerCommand
+from guillotina_kafka.interfaces import IConsumerUtility
+from guillotina_kafka.consumer.batch import BatchConsumer
+from guillotina_kafka.consumer import InvalidConsumerType
+from guillotina_kafka.consumer.stream import StreamConsumer
+from guillotina_kafka.consumer import ConsumerWorkerLookupError
+
 
 logger = logging.getLogger(__name__)
 
@@ -125,9 +125,8 @@ class StartConsumerCommand(ServerCommand):
         except Exception:
             logger.error('Error running consumer', exc_info=True)
             loop = self.get_loop()
-            pending = asyncio.Task.all_tasks()
-            loop.run_until_complete(asyncio.gather(*pending))
-            loop.close()
+            for task in asyncio.Task.all_tasks():
+                task.cancel()
             sys.exit(1)
 
     def run(self, arguments, settings, app):
