@@ -1,5 +1,9 @@
 Changelog
 =========
+2.1.3
+------
+- Really exit the consumer on exception.
+
 2.1.2
 ------
 - Added stat endpoint to consumer.
