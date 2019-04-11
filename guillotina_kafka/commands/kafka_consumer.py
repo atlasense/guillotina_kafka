@@ -1,15 +1,15 @@
-from guillotina.commands.server import ServerCommand
-from guillotina.component import get_adapter
-from guillotina.utils import resolve_dotted_name
-from guillotina_kafka.consumer import ConsumerWorkerLookupError
-from guillotina_kafka.consumer import InvalidConsumerType
-from guillotina_kafka.consumer.batch import BatchConsumer
-from guillotina_kafka.consumer.stream import StreamConsumer
-from guillotina_kafka.interfaces import IConsumerUtility
-
+import sys
 import asyncio
 import logging
-import sys
+from guillotina.component import get_adapter
+from guillotina.utils import resolve_dotted_name
+from guillotina.commands.server import ServerCommand
+from guillotina_kafka.interfaces import IConsumerUtility
+from guillotina_kafka.consumer.batch import BatchConsumer
+from guillotina_kafka.consumer import InvalidConsumerType
+from guillotina_kafka.consumer.stream import StreamConsumer
+from guillotina_kafka.consumer import ConsumerWorkerLookupError
+
 
 logger = logging.getLogger(__name__)
 
@@ -127,7 +127,8 @@ class StartConsumerCommand(ServerCommand):
             loop = self.get_loop()
             pending = asyncio.Task.all_tasks()
             try:
-                loop.run_until_complete(asyncio.wait_for(asyncio.gather(*pending), 3))
+                loop.run_until_complete(
+                    asyncio.wait_for(asyncio.gather(*pending), 3))
             except asyncio.TimeoutError:
                 pass
             sys.exit(1)
