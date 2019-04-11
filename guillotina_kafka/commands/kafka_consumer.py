@@ -126,8 +126,10 @@ class StartConsumerCommand(ServerCommand):
             logger.error('Error running consumer', exc_info=True)
             loop = self.get_loop()
             pending = asyncio.Task.all_tasks()
-            loop.run_until_complete(asyncio.gather(*pending))
-            loop.close()
+            try:
+                loop.run_until_complete(asyncio.wait_for(asyncio.gather(*pending), 3))
+            except asyncio.TimeoutError:
+                pass
             sys.exit(1)
 
     def run(self, arguments, settings, app):
