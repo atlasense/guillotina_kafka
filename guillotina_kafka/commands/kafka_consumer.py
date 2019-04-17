@@ -125,8 +125,6 @@ class StartConsumerCommand(ServerCommand):
         except Exception:
             logger.error('Error running consumer', exc_info=True)
             loop = self.get_loop()
-            for task in asyncio.Task.all_tasks():
-                task.cancel()
             sys.exit(1)
 
     def run(self, arguments, settings, app):
