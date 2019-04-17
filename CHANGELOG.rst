@@ -1,5 +1,9 @@
 Changelog
 =========
+2.1.4
+------
+- Remove tasks cancelation on consumer exception.
+
 2.1.3
 ------
 - Really exit the consumer on exception.
