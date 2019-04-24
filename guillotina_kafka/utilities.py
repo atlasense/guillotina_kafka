@@ -1,34 +1,37 @@
-import json
-import asyncio
-from guillotina import configure
-from guillotina import app_settings
 from aiokafka import AIOKafkaProducer
+from guillotina import app_settings
 from guillotina.component import get_utility
 from guillotina_kafka.interfaces import IKafkaProducerUtility
+from guillotina_kafka.producer import SERIALIZER
+
+import asyncio
+import json
 
 
-@configure.utility(provides=IKafkaProducerUtility)
 class KafkaProducerUtility:
     """This defines the singleton that will hold the connection to kafka
     and allows to send messages from it.
     """
-    def __init__(self, loop=None):
+    def __init__(self, settings, loop=None):
         # Get kafka connection details from app settings
         self.loop = loop
         self.producer = None
-        self.config = {
-            'bootstrap_servers': app_settings['kafka']['brokers'],
-            'value_serializer': lambda data: json.dumps(data).encode('utf-8')
-        }
-
+        self.settings = settings or {}
 
     async def setup(self, **kwargs):
         """Gets or creates the connection to kafka"""
-        self.config = {**self.config, **kwargs}
-        self.config.setdefault(
+        serializer = SERIALIZER.get(
+            self.settings.get('serializer') or 'json',
+            lambda data: json.dumps(data).encode('utf-8')
+        )
+        config = {**{
+            'bootstrap_servers': app_settings['kafka']['brokers'],
+            'value_serializer': serializer
+        }, **self.settings, **kwargs}
+        config.setdefault(
             'loop', self.loop or asyncio.get_event_loop())
         if self.producer is None:
-            self.producer = AIOKafkaProducer(**self.config)
+            self.producer = AIOKafkaProducer(**config)
             await self.producer.start()
         return self.producer
 

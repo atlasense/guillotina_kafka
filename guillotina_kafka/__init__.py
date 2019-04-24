@@ -3,12 +3,11 @@ from .interfaces import *  # noqa
 from .utilities import *  # noqa
 
 
-
 app_settings = {
     "commands": {
         "start-producer": "guillotina_kafka.commands.kafka_producer.SendMessageCommand",
         "start-consumer": "guillotina_kafka.commands.kafka_consumer.StartConsumerCommand"
-    },   
+    },
     "kafka": {
         "brokers": [
             "localhost:9092"
@@ -16,6 +15,12 @@ app_settings = {
         "consumer_workers": {
             "default": "guillotina_kafka.consumer.default_worker",
             "es": "guillotina_kafka.consumer.es_worker"
+        }
+    },
+    "load_utilities": {
+        "kafka": {
+            "provides": "guillotina_kafka.interfaces.IKafkaProducerUtility",
+            "factory": "guillotina_kafka.utilities.KafkaProducerUtility"
         }
     }
 }

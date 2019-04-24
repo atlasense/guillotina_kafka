@@ -1,5 +1,13 @@
 Changelog
 =========
+
+2.2.0
+-----
+
+- Register kafka utility in `load_utililies` and do not require
+  `.setup()` step
+  [vangheem]
+
 2.1.4
 ------
 - Remove tasks cancelation on consumer exception.

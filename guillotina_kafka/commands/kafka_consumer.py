@@ -31,7 +31,7 @@ class StartConsumerCommand(ServerCommand):
         parser.add_argument(
             '--regex-topic', type=str,
             help='Pattern to match available topics. You must provide '
-                    'either topics or pattern, but not both.'
+                 'either topics or pattern, but not both.'
         )
         parser.add_argument(
             '--consumer-worker', type=str, default='default',
