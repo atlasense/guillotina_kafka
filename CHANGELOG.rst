@@ -4,8 +4,7 @@ Changelog
 2.2.0
 -----
 
-- Register kafka utility in `load_utililies` and do not require
-  `.setup()` step
+- Register kafka utility in `load_utililies` and reuse registered serializers
   [vangheem]
 
 2.1.4
