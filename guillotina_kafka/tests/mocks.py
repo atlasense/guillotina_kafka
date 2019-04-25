@@ -20,6 +20,9 @@ class KafkaProducerUtility:
         self.sent = {}
         self.results = {}
 
+    async def initialize(self):
+        pass
+
     async def setup(self, **kwargs):
         pass
 
