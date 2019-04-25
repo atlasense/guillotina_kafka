@@ -1,15 +1,18 @@
-import sys
+from guillotina.commands.server import ServerCommand
+from guillotina.component import get_adapter
+from guillotina.tests.utils import get_mocked_request
+from guillotina.tests.utils import login
+from guillotina.utils import resolve_dotted_name
+from guillotina_kafka.consumer import ConsumerWorkerLookupError
+from guillotina_kafka.consumer import InvalidConsumerType
+from guillotina_kafka.consumer.batch import BatchConsumer
+from guillotina_kafka.consumer.stream import StreamConsumer
+from guillotina_kafka.interfaces import IConsumerUtility
+
+import aiotask_context
 import asyncio
 import logging
-from guillotina.component import get_adapter
-from guillotina.utils import resolve_dotted_name
-from guillotina.commands.server import ServerCommand
-from guillotina_kafka.interfaces import IConsumerUtility
-from guillotina_kafka.consumer.batch import BatchConsumer
-from guillotina_kafka.consumer import InvalidConsumerType
-from guillotina_kafka.consumer.stream import StreamConsumer
-from guillotina_kafka.consumer import ConsumerWorkerLookupError
-
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +37,7 @@ class StartConsumerCommand(ServerCommand):
                  'either topics or pattern, but not both.'
         )
         parser.add_argument(
-            '--consumer-worker', type=str, default='default',
+            '--consumer-worker', type=str, default='default', nargs='+',
             help='Application consumer that will consume messages from topics.'
         )
         parser.add_argument(
@@ -64,9 +67,7 @@ class StartConsumerCommand(ServerCommand):
                 return worker
         return {}
 
-    def get_consumer(self, arguments, settings):
-
-        worker = self.get_worker(arguments.consumer_worker, settings)
+    def get_consumer(self, worker, arguments, settings):
         if not worker:
             raise ConsumerWorkerLookupError(
                 'Worker has not been registered.'
@@ -120,6 +121,9 @@ class StartConsumerCommand(ServerCommand):
         Run the consumer in a way that makes sure we exit
         if the consumer throws an error
         '''
+        request = get_mocked_request()
+        login(request)
+        aiotask_context.set('request', request)
         try:
             await consumer.consume(arguments, settings)
         except Exception:
@@ -127,9 +131,11 @@ class StartConsumerCommand(ServerCommand):
             sys.exit(1)
 
     def run(self, arguments, settings, app):
-        consumer = self.get_consumer(arguments, settings)
         loop = self.get_loop()
-        asyncio.ensure_future(
-            self.run_consumer(consumer, arguments, settings),
-            loop=loop)
+        for consumer_worker in arguments.consumer_worker:
+            worker = self.get_worker(consumer_worker, settings)
+            consumer = self.get_consumer(worker, arguments, settings)
+            asyncio.ensure_future(
+                self.run_consumer(consumer, arguments, settings),
+                loop=loop)
         return super().run(arguments, settings, app)

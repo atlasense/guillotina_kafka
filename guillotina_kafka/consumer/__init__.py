@@ -1,12 +1,12 @@
 import time
 import asyncio
-from guillotina import app_settings
 from aiokafka import AIOKafkaConsumer
 
 KAFKA_CONSUMER_STAT = {}
 
 def counter():
     counters = {}
+
     def inc(name, i):
         counters[name] = counters.setdefault(name, 0) + i
         return counters[name]
@@ -27,22 +27,23 @@ class consumer_stat(object):
             'group': self.group,
             'worker': self.worker,
             'current_offset': None,
-            'current_partition':  None,
-            'current_timestamp':  None,
+            'current_partition': None,
+            'current_timestamp': None,
             'total_count': 0
         }
 
     def compute_stat(self, record):
         KAFKA_CONSUMER_STAT[self.name]['total_count'] += 1
         KAFKA_CONSUMER_STAT[self.name]['current_offset'] = record.offset
-        KAFKA_CONSUMER_STAT[self.name]['current_timestamp'] = time.ctime(record.timestamp/1000)
+        KAFKA_CONSUMER_STAT[self.name]['current_timestamp'] = time.ctime(
+            record.timestamp / 1000)
         KAFKA_CONSUMER_STAT[self.name]['current_partition'] = record.partition
         KAFKA_CONSUMER_STAT[self.name]['topics'][record.topic] = {
-                'timestamp': time.ctime(record.timestamp/1000),
-                'partition': record.partition,
-                'offset': record.offset,
-                'count': self.counter(record.topic, 1)
-            }
+            'timestamp': time.ctime(record.timestamp / 1000),
+            'partition': record.partition,
+            'offset': record.offset,
+            'count': self.counter(record.topic, 1)
+        }
 
     def __call__(self, f):
         async def wrapped_f(*args, **kwargs):
@@ -107,7 +108,7 @@ class Consumer(object):
     def is_ready(self):
         return self._consumer is not None
 
-    async def get(self,max_records=1, within=60*1000):
+    async def get(self, max_records=1, within=60 * 1000):
         return await self._consumer.getmany(
             timeout_ms=within, max_records=max_records)
 

@@ -4,6 +4,9 @@ Changelog
 2.2.0
 -----
 
+- Be able to run multiple workers at the same time
+  [vangheem]
+
 - Register kafka utility in `load_utililies` and reuse registered serializers
   [vangheem]
 
