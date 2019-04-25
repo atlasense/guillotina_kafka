@@ -1,8 +1,8 @@
+from collections import namedtuple
 from guillotina import app_settings
 from guillotina.utils.modules import resolve_dotted_name
-from collections import namedtuple
-import inspect
 
+import inspect
 
 Message = namedtuple('Message', 'value partition offset topic')
 
