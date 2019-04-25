@@ -11,6 +11,7 @@ from guillotina_kafka.interfaces import IConsumerUtility
 
 import aiotask_context
 import asyncio
+import inspect
 import logging
 import sys
 
@@ -67,7 +68,7 @@ class StartConsumerCommand(ServerCommand):
                 return worker
         return {}
 
-    def get_consumer(self, worker, arguments, settings):
+    async def get_consumer(self, worker, arguments, settings):
         if not worker:
             raise ConsumerWorkerLookupError(
                 'Worker has not been registered.'
@@ -77,10 +78,15 @@ class StartConsumerCommand(ServerCommand):
             consumer_worker = resolve_dotted_name(
                 worker['path']
             )
-        except:
+        except KeyError:
             raise ConsumerWorkerLookupError(
                 'Worker has not been registered.'
             )
+
+        if inspect.isclass(consumer_worker):
+            handler = consumer_worker()
+        if hasattr(handler, 'initialize'):
+            await handler.initialize()
 
         topic_prefix = settings['kafka'].get('topic_prefix')
         if topic_prefix:
@@ -127,6 +133,11 @@ class StartConsumerCommand(ServerCommand):
         try:
             await consumer.consume(arguments, settings)
         except Exception:
+            if hasattr(consumer.consumer, 'finalize'):
+                try:
+                    await consumer.consumer.finalize()
+                except Exception:
+                    logger.error('Error calling cleanup', exc_info=True)
             logger.error('Error running consumer', exc_info=True)
             sys.exit(1)
 
