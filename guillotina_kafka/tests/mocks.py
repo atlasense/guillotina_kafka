@@ -36,9 +36,6 @@ class KafkaProducerUtility:
             if hasattr(handler, 'finalize'):
                 await handler.finalize()
 
-    async def setup(self, **kwargs):
-        pass
-
     async def send(self, topic, value):
         if topic not in self.sent:
             self.sent[topic] = []
