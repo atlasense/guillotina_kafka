@@ -1,5 +1,9 @@
 Changelog
 =========
+2.1.5
+------
+- Now we can run multiple consumers in a single process
+
 2.1.4
 ------
 - Remove tasks cancelation on consumer exception.
