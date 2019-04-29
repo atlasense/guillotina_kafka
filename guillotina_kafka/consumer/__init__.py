@@ -1,5 +1,5 @@
 import time
-import asyncio
+import asyncio, threading
 from guillotina import app_settings
 from aiokafka import AIOKafkaConsumer
 
@@ -63,6 +63,20 @@ async def default_worker(*args, **kwargs):
 async def es_worker(*args, **kwargs):
     print('ES', args[0])
     return
+
+
+async def multi_default_worker(
+        topic, request, arguments, settings, *args, **kwargs):
+    await topic.start()
+    async for msg in topic:
+        print('default_worker', msg)
+
+
+async def multi_es_worker(
+        topic, request, arguments, settings, *args, **kwargs):
+    await topic.start()
+    async for msg in topic:
+        print('es_worker', msg)
 
 
 class ConsumerWorkerLookupError(Exception):
