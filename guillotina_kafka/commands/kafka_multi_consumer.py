@@ -4,18 +4,17 @@ import aiotask_context
 from aiokafka import AIOKafkaConsumer
 from asyncio import InvalidStateError
 from guillotina.tests.utils import login
-from guillotina.component import get_adapter
 from guillotina.utils import resolve_dotted_name
 from guillotina.commands.server import ServerCommand
 from guillotina.tests.utils import get_mocked_request
-from guillotina_kafka.interfaces import IConsumerUtility
-from guillotina_kafka.consumer import InvalidConsumerType
-from guillotina_kafka.consumer.batch import BatchConsumer
-from guillotina_kafka.consumer.stream import StreamConsumer
 from guillotina_kafka.consumer import ConsumerWorkerLookupError
 
 
 logger = logging.getLogger(__name__)
+
+
+class StopConsumerException(Exception):
+    pass
 
 
 class TaskWrapper:
@@ -50,6 +49,18 @@ class TaskWrapper:
                 if exception:
                     result = False
             except (InvalidStateError):
+                pass
+        return result
+
+    @property
+    def was_stoped(self):
+        result = False
+        if self.future is not None:
+            try:
+                exception = self.future.exception()
+                if isinstance(exception, StopConsumerException):
+                    result = True
+            except InvalidStateError:
                 pass
         return result
 
@@ -134,7 +145,7 @@ class StartConsumersCommand(ServerCommand):
     async def check(self):
         while True:
             for _id, task in enumerate(self.tasks):
-                if task.running:
+                if task.running or task.was_stoped:
                     continue
                 task.restart()
                 self.tasks[_id] = task
