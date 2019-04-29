@@ -38,12 +38,37 @@ Consumers
 Consumer workers are `python coroutines` that define the logic  
 you want to apply on the messages consumed from kafka.
 
-Example:
+Example 1: Single running consumer per pod
+
 ```python
 async def my_consumer(msg, arguments=None, settings=None):
     print(f"{msg.topic}:{msg.partition}:{msg.offset}: key={msg.key} value={msg.value}")
     deserialized_msg = json.loads(msg.value.decode('utf-8'))
     await do_something(deserialized_msg)
+```
+
+```bash
+guillotina -c config.json start-consumer --consumer-type=stream --consumer-worker=es_consumer
+```
+
+Example 2: Multiple running consumers per pod
+
+``` python
+async def default_worker(
+        topic, request, arguments, settings, *args, **kwargs):
+    await topic.start()
+    async for msg in topic:
+        print('default_worker', msg)
+
+async def es_worker(
+        topic, request, arguments, settings, *args, **kwargs):
+    await topic.start()
+    async for msg in topic:
+        print('es_worker', msg)
+```
+
+```bash
+guillotina -c config.json start-consumers --consumer-worker default es
 ```
 
 Installation and Configuration

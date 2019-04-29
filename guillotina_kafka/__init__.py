@@ -7,7 +7,8 @@ from .utilities import *  # noqa
 app_settings = {
     "commands": {
         "start-producer": "guillotina_kafka.commands.kafka_producer.SendMessageCommand",
-        "start-consumer": "guillotina_kafka.commands.kafka_consumer.StartConsumerCommand"
+        "start-consumer": "guillotina_kafka.commands.kafka_consumer.StartConsumerCommand",
+        "start-consumers": "guillotina_kafka.commands.kafka_multi_consumer.StartConsumersCommand"
     },   
     "kafka": {
         "brokers": [
