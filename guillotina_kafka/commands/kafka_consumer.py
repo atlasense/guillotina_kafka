@@ -1,6 +1,7 @@
 import sys
 import asyncio
 import logging
+from guillotina import app_settings
 from guillotina.component import get_adapter
 from guillotina.utils import resolve_dotted_name
 from guillotina.commands.server import ServerCommand
@@ -9,7 +10,6 @@ from guillotina_kafka.consumer.batch import BatchConsumer
 from guillotina_kafka.consumer import InvalidConsumerType
 from guillotina_kafka.consumer.stream import StreamConsumer
 from guillotina_kafka.consumer import ConsumerWorkerLookupError
-from guillotina import app_settings
 
 
 logger = logging.getLogger(__name__)
@@ -32,7 +32,7 @@ class StartConsumerCommand(ServerCommand):
         parser.add_argument(
             '--regex-topic', type=str,
             help='Pattern to match available topics. You must provide '
-                    'either topics or pattern, but not both.'
+            'either topics or pattern, but not both.'
         )
         parser.add_argument(
             '--consumer-worker', type=str, default='default',
@@ -77,7 +77,7 @@ class StartConsumerCommand(ServerCommand):
             consumer_worker = resolve_dotted_name(
                 worker['path']
             )
-        except:
+        except Exception:
             raise ConsumerWorkerLookupError(
                 'Worker has not been registered.'
             )
@@ -107,14 +107,17 @@ class StartConsumerCommand(ServerCommand):
             }[arguments.consumer_type](
                 cli_topic or settings_topics,
                 worker=consumer_worker,
-                group_id=arguments.consumer_group or worker.get('group', 'default'),
+                group_id=arguments.consumer_group or worker.get(
+                    'group', 'default'),
                 api_version=arguments.api_version,
                 bootstrap_servers=app_settings['kafka']['brokers']
             )
         except KeyError:
-            raise InvalidConsumerType(f'{arguments.consumer_type} is not valid.')
+            raise InvalidConsumerType(
+                f'{arguments.consumer_type} is not valid.')
 
-        return get_adapter(consumer, IConsumerUtility, name=arguments.consumer_type)
+        return get_adapter(
+            consumer, IConsumerUtility, name=arguments.consumer_type)
 
     async def run_consumer(self, consumer, arguments):
         '''
