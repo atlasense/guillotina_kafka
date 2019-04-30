@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import aiotask_context
+from guillotina import app_settings
 from aiokafka import AIOKafkaConsumer
 from asyncio import InvalidStateError
 from guillotina.tests.utils import login
@@ -90,19 +91,19 @@ class StartConsumersCommand(ServerCommand):
         )
         return parser
 
-    def get_worker(self, name, settings):
-        for worker in settings['kafka']['consumer']['workers']:
+    def get_worker(self, name):
+        for worker in app_settings['kafka']['consumer']['workers']:
             if name == worker['name']:
                 worker = {
                     **worker, "topics": list({
                         *worker.get('topics', []),
-                        *settings['kafka']['consumer'].get('topics', [])
+                        *app_settings['kafka']['consumer'].get('topics', [])
                     })
                 }
                 return worker
         return {}
 
-    async def run_consumer(self, worker, topic, arguments, settings):
+    async def run_consumer(self, worker, topic, arguments):
         '''
         Run the consumer in a way that makes sure we exit
         if the consumer throws an error
@@ -112,14 +113,14 @@ class StartConsumersCommand(ServerCommand):
         aiotask_context.set('request', request)
 
         try:
-            await worker(topic, request, arguments, settings)
+            await worker(topic, request, arguments, app_settings)
         except Exception:
             logger.error('Error running consumer', exc_info=True)
         finally:
             await topic.stop()
 
-    def init_worker(self, worker_name, arguments, settings):
-        worker = self.get_worker(worker_name, settings)
+    def init_worker(self, worker_name, arguments):
+        worker = self.get_worker(worker_name)
         if not worker:
             raise ConsumerWorkerLookupError(
                 f'{worker_name}: Worker has not been registered.')
@@ -131,7 +132,7 @@ class StartConsumersCommand(ServerCommand):
                 AIOKafkaConsumer(topic, **{
                     "api_version": arguments.api_version,
                     "group_id": worker.get('group', 'default'),
-                    "bootstrap_servers": settings['kafka']['brokers'],
+                    "bootstrap_servers": app_settings['kafka']['brokers'],
                     'loop': self.get_loop(),
                     'metadata_max_age_ms': 5000,
                 })
@@ -156,12 +157,12 @@ class StartConsumersCommand(ServerCommand):
         self.evry = arguments.check_interval
         self.manager_loop = self.get_loop()
         for worker_name in arguments.consumer_worker:
-            worker = self.init_worker(worker_name, arguments, settings)
+            worker = self.init_worker(worker_name, arguments)
             for topic in worker['topics']:
                 for _ in range(worker.get('replicas', 1)):
                     task = TaskWrapper(
                         self.manager_loop, self.run_consumer,
-                        worker['handler'], topic, arguments, settings
+                        worker['handler'], topic, arguments
                     )
                     task.run()
                     self.tasks.append(task)
