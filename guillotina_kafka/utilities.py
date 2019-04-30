@@ -16,15 +16,13 @@ class KafkaProducerUtility:
         # Get kafka connection details from app settings
         self.loop = loop
         self.producer = None
-        self.config = {
-            'bootstrap_servers': app_settings['kafka']['brokers'],
-            'value_serializer': lambda data: json.dumps(data).encode('utf-8')
-        }
-
 
     async def setup(self, **kwargs):
         """Gets or creates the connection to kafka"""
-        self.config = {**self.config, **kwargs}
+        self.config = {**{
+            'bootstrap_servers': app_settings['kafka']['brokers'],
+            'value_serializer': lambda data: json.dumps(data).encode('utf-8')
+        }, **kwargs}
         self.config.setdefault(
             'loop', self.loop or asyncio.get_event_loop())
         if self.producer is None:

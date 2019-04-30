@@ -1,7 +1,13 @@
 Changelog
 =========
+
+2.1.6
+-----
+
+- Use configured app settings
+
 2.1.5
-------
+-----
 - Now we can run multiple consumers in a single process
 
 2.1.4

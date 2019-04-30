@@ -9,6 +9,7 @@ from guillotina_kafka.consumer.batch import BatchConsumer
 from guillotina_kafka.consumer import InvalidConsumerType
 from guillotina_kafka.consumer.stream import StreamConsumer
 from guillotina_kafka.consumer import ConsumerWorkerLookupError
+from guillotina import app_settings
 
 
 logger = logging.getLogger(__name__)
@@ -52,21 +53,21 @@ class StartConsumerCommand(ServerCommand):
         )
         return parser
 
-    def get_worker(self, name, settings):
-        for worker in settings['kafka']['consumer']['workers']:
+    def get_worker(self, name):
+        for worker in app_settings['kafka']['consumer']['workers']:
             if name == worker['name']:
                 worker = {
                     **worker, "topics": list({
                         *worker.get('topics', []),
-                        *settings['kafka']['consumer'].get('topics', [])
+                        *app_settings['kafka']['consumer'].get('topics', [])
                     })
                 }
                 return worker
         return {}
 
-    def get_consumer(self, arguments, settings):
+    def get_consumer(self, arguments):
 
-        worker = self.get_worker(arguments.consumer_worker, settings)
+        worker = self.get_worker(arguments.consumer_worker)
         if not worker:
             raise ConsumerWorkerLookupError(
                 'Worker has not been registered.'
@@ -81,7 +82,7 @@ class StartConsumerCommand(ServerCommand):
                 'Worker has not been registered.'
             )
 
-        topic_prefix = settings['kafka'].get('topic_prefix')
+        topic_prefix = app_settings['kafka'].get('topic_prefix')
         if topic_prefix:
             worker['topics'] = [
                 f'{topic_prefix}{topic}'
@@ -108,28 +109,28 @@ class StartConsumerCommand(ServerCommand):
                 worker=consumer_worker,
                 group_id=arguments.consumer_group or worker.get('group', 'default'),
                 api_version=arguments.api_version,
-                bootstrap_servers=settings['kafka']['brokers']
+                bootstrap_servers=app_settings['kafka']['brokers']
             )
         except KeyError:
             raise InvalidConsumerType(f'{arguments.consumer_type} is not valid.')
 
         return get_adapter(consumer, IConsumerUtility, name=arguments.consumer_type)
 
-    async def run_consumer(self, consumer, arguments, settings):
+    async def run_consumer(self, consumer, arguments):
         '''
         Run the consumer in a way that makes sure we exit
         if the consumer throws an error
         '''
         try:
-            await consumer.consume(arguments, settings)
+            await consumer.consume(arguments, app_settings)
         except Exception:
             logger.error('Error running consumer', exc_info=True)
             sys.exit(1)
 
     def run(self, arguments, settings, app):
-        consumer = self.get_consumer(arguments, settings)
+        consumer = self.get_consumer(arguments)
         loop = self.get_loop()
         asyncio.ensure_future(
-            self.run_consumer(consumer, arguments, settings),
+            self.run_consumer(consumer, arguments),
             loop=loop)
         return super().run(arguments, settings, app)
