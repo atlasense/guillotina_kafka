@@ -131,6 +131,6 @@ class StartConsumerCommand(ServerCommand):
         consumer = self.get_consumer(arguments)
         loop = self.get_loop()
         asyncio.ensure_future(
-            self.run_consumer(consumer, arguments, settings),
+            self.run_consumer(consumer, arguments),
             loop=loop)
         return super().run(arguments, settings, app)
