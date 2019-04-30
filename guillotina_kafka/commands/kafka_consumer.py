@@ -128,7 +128,7 @@ class StartConsumerCommand(ServerCommand):
             sys.exit(1)
 
     def run(self, arguments, settings, app):
-        consumer = self.get_consumer(arguments, settings)
+        consumer = self.get_consumer(arguments)
         loop = self.get_loop()
         asyncio.ensure_future(
             self.run_consumer(consumer, arguments, settings),
