@@ -53,13 +53,13 @@ class StartConsumerCommand(ServerCommand):
         )
         return parser
 
-    def get_worker(self, name, settings):
-        for worker in settings['kafka']['consumer']['workers']:
+    def get_worker(self, name):
+        for worker in app_settings['kafka']['consumer']['workers']:
             if name == worker['name']:
                 worker = {
                     **worker, "topics": list({
                         *worker.get('topics', []),
-                        *settings['kafka']['consumer'].get('topics', [])
+                        *app_settings['kafka']['consumer'].get('topics', [])
                     })
                 }
                 return worker
