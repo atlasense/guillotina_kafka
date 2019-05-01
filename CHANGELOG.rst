@@ -1,6 +1,12 @@
 Changelog
 =========
 
+2.1.7
+-----
+
+- Multiple consumers in a single process fix
+- Add consumer-stat command to have a global stat on a topic 
+
 2.1.6
 -----
 

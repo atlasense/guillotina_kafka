@@ -5,14 +5,45 @@ from .utilities import *  # noqa
 
 app_settings = {
     "commands": {
-        "start-producer": "guillotina_kafka.commands.kafka_producer.SendMessageCommand",
-        "start-consumer": "guillotina_kafka.commands.kafka_consumer.StartConsumerCommand",
-        "start-consumers": "guillotina_kafka.commands.kafka_multi_consumer.StartConsumersCommand"
-    },   
+        "consumer-stat": "guillotina_kafka.commands.kafka_tools.ConsumerStatCommand",  # noqa
+        "start-producer": "guillotina_kafka.commands.kafka_producer.SendMessageCommand",  # noqa
+        "start-consumer": "guillotina_kafka.commands.kafka_consumer.StartConsumerCommand",  # noqa
+        "start-consumers": "guillotina_kafka.commands.kafka_multi_consumer.StartConsumersCommand"  # noqa
+    },
     "kafka": {
+        "topic_prefix": "dev-",
         "brokers": [
             "localhost:9092"
-        ]
+        ],
+        "consumer": {
+            "workers": [
+                {
+                    "name": "multi-default",
+                    "group": "default",
+                    "topics": ["default-topic"],
+                    "path": "guillotina_kafka.consumer.multi_default_worker"
+                },
+                {
+                    "name": "multi-es",
+                    "group": "es-group",
+                    "topics": ["es-topic"],
+                    "path": "guillotina_kafka.consumer.multi_es_worker"
+                },
+                {
+                    "name": "default",
+                    "group": "default",
+                    "topics": ["default-topic"],
+                    "path": "guillotina_kafka.consumer.default_worker"
+                },
+                {
+                    "name": "es",
+                    "group": "es-group",
+                    "topics": ["es-topic"],
+                    "path": "guillotina_kafka.consumer.es_worker"
+                }
+            ],
+            "topics": ["test-topic"]
+        }
     }
 }
 
