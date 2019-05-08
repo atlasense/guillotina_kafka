@@ -3,7 +3,9 @@ import logging
 import aiotask_context
 from guillotina import app_settings
 from aiokafka import AIOKafkaConsumer
+from asyncio import InvalidStateError
 from guillotina.tests.utils import login
+from aiokafka.errors import IllegalStateError
 from guillotina.utils import resolve_dotted_name
 from guillotina.commands.server import ServerCommand
 from guillotina.tests.utils import get_mocked_request
@@ -78,14 +80,61 @@ class StartConsumersCommand(ServerCommand):
                 f'{worker_name}: Worker has not been registered.')
         return worker
 
-    def run(self, arguments, settings, app):
+    async def monitor(self, interval=60):
+        while True:
+            logger.warnings('Checking consumer workers')
+            for task in self.tasks:
+                exception = None
+                try:
+                    exception = task.exception()
+                    if exception is not None:
+                        for task in filter(
+                                lambda _task: _task != task, self.tasks):
+                            task.cancel()
+                        exit(1)
+                except InvalidStateError:
+                    continue
+            await asyncio.sleep(interval)
+
+    async def seek(self, topic, step):
+        for tp in topic.assignment():
+            try:
+                position = await topic.position(tp)
+            except IllegalStateError:
+                position = 0
+
+            if position > 0:
+                topic.seek(tp, position + step)
+        return topic
+
+    async def reposition_offset(self, topic, position):
+
+        try:
+            position = int(position)
+        except ValueError:
+            pass
+        else:
+            return await self.seek(topic, position)
+
+        try:
+            await {
+                'beginning': topic.seek_to_beginning,
+                'end': topic.seek_to_end,
+            }[position]()
+        except KeyError:
+            raise Exception('Invalid offset position')
+
+        return topic
+
+    async def run(self, arguments, settings, app):
         self.tasks = []
         self.evry = arguments.check_interval
         for worker_name in arguments.consumer_worker:
             worker = self.init_worker(worker_name, arguments)
+
             for topic in worker['topics']:
                 topic_prefix = app_settings["kafka"].get("topic_prefix", "")
-                consumer = AIOKafkaConsumer(
+                topic = AIOKafkaConsumer(
                     f'{topic_prefix}{topic}', **{
                         "api_version": arguments.api_version,
                         "group_id": worker.get("group", "default"),
@@ -93,7 +142,17 @@ class StartConsumersCommand(ServerCommand):
                         'loop': self.get_loop(),
                         'metadata_max_age_ms': 5000,
                     })
-                self.tasks.append(
-                    self.run_consumer(worker['handler'], consumer, arguments))
-        asyncio.gather(*self.tasks, loop=self.get_loop())
+
+                if worker.get('start_from'):
+                    topic = await self.reposition_offset(
+                        topic, worker.get('start_from'))
+
+                task = asyncio.ensure_future(
+                    self.run_consumer(worker['handler'], topic, arguments),
+                    loop=self.get_loop()
+                )
+                self.tasks.append(task)
+
+        asyncio.ensure_future(
+            self.monitor(arguments.check_interval), loop=self.get_loop())
         return super().run(arguments, settings, app)

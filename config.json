@@ -53,11 +53,11 @@
                     "name": "multi-default",
                     "group": "default",
                     "topics": ["default-topic"],
+                    "start_from": [],
                     "path": "guillotina_kafka.consumer.multi_default_worker"
                 },
                 {
                     "name": "multi-es",
-                    "replicas": 1,
                     "group": "es-group",
                     "topics": ["es-topic"],
                     "path": "guillotina_kafka.consumer.multi_es_worker"
@@ -70,7 +70,6 @@
                 },
                 {
                     "name": "es",
-                    "replicas": 1,
                     "group": "es-group",
                     "topics": ["es-topic"],
                     "path": "guillotina_kafka.consumer.es_worker"
