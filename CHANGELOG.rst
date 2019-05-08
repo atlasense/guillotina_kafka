@@ -1,6 +1,12 @@
 Changelog
 =========
 
+2.1.8
+-----
+
+- Make consumer worker config available to the worker
+- Properly exit on consumer crash
+
 2.1.7
 -----
 

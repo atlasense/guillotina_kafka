@@ -1,9 +1,11 @@
+import os
 import asyncio
 import logging
 import aiotask_context
 from guillotina import app_settings
 from aiokafka import AIOKafkaConsumer
 from guillotina.tests.utils import login
+from aiokafka.errors import IllegalStateError
 from guillotina.utils import resolve_dotted_name
 from guillotina.commands.server import ServerCommand
 from guillotina.tests.utils import get_mocked_request
@@ -27,10 +29,6 @@ class StartConsumersCommand(ServerCommand):
             help='Application consumer that will consume messages from topics.'
         )
         parser.add_argument(
-            '--check-interval', type=int, default=60,
-            help='The time interval between consumers state check.'
-        )
-        parser.add_argument(
             '--api-version', type=str,
             default='auto', help='Kafka server api version.'
         )
@@ -48,7 +46,7 @@ class StartConsumersCommand(ServerCommand):
                 return worker
         return {}
 
-    async def run_consumer(self, worker, topic, arguments):
+    async def run_consumer(self, worker, topic, worker_conf):
         '''
         Run the consumer in a way that makes sure we exit
         if the consumer throws an error
@@ -58,11 +56,11 @@ class StartConsumersCommand(ServerCommand):
         aiotask_context.set('request', request)
 
         try:
-            await worker(topic, request, arguments, app_settings)
+            await worker(topic, request, worker_conf, app_settings)
         except Exception:
             logger.error('Error running consumer', exc_info=True)
             await topic.stop()
-            raise
+            os._exit(1)
 
     def init_worker(self, worker_name, arguments):
         worker = self.get_worker(worker_name)
@@ -80,7 +78,6 @@ class StartConsumersCommand(ServerCommand):
 
     def run(self, arguments, settings, app):
         self.tasks = []
-        self.evry = arguments.check_interval
         for worker_name in arguments.consumer_worker:
             worker = self.init_worker(worker_name, arguments)
             for topic in worker['topics']:
@@ -94,6 +91,49 @@ class StartConsumersCommand(ServerCommand):
                         'metadata_max_age_ms': 5000,
                     })
                 self.tasks.append(
-                    self.run_consumer(worker['handler'], consumer, arguments))
+                    self.run_consumer(worker['handler'], consumer, worker))
         asyncio.gather(*self.tasks, loop=self.get_loop())
         return super().run(arguments, settings, app)
+
+
+class BaseConsumerWorker:
+
+    def __init__(self, msg_deserializer=lambda data: data.decode('utf-8')):
+        self.msg_deserializer = msg_deserializer
+        self.ready = False
+
+    async def seek(self, topic, step):
+        for tp in topic.assignment():
+            try:
+                position = await topic.position(tp)
+            except IllegalStateError:
+                position = 0
+
+            if position > 0:
+                topic.seek(tp, position + step)
+        return topic
+
+    async def reposition_offset(self, topic, position):
+
+        try:
+            position = int(position)
+        except ValueError:
+            pass
+        else:
+            return await self.seek(topic, position)
+
+        try:
+            await {
+                'beginning': topic.seek_to_beginning,
+                'end': topic.seek_to_end,
+            }[position]()
+        except KeyError:
+            raise Exception('Invalid offset position')
+
+        return topic
+
+    async def setup(self):
+        raise NotImplementedError()
+
+    async def __call__(self, topic, request, worker_conf, settings):
+        raise NotImplementedError()
