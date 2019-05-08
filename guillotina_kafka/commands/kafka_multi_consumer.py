@@ -1,3 +1,4 @@
+import os
 import asyncio
 import logging
 import aiotask_context
@@ -59,7 +60,7 @@ class StartConsumersCommand(ServerCommand):
         except Exception:
             logger.error('Error running consumer', exc_info=True)
             await topic.stop()
-            exit(1)
+            os._exit(1)
 
     def init_worker(self, worker_name, arguments):
         worker = self.get_worker(worker_name)
