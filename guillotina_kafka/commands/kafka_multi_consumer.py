@@ -27,10 +27,6 @@ class StartConsumersCommand(ServerCommand):
             help='Application consumer that will consume messages from topics.'
         )
         parser.add_argument(
-            '--check-interval', type=int, default=60,
-            help='The time interval between consumers state check.'
-        )
-        parser.add_argument(
             '--api-version', type=str,
             default='auto', help='Kafka server api version.'
         )
@@ -48,7 +44,7 @@ class StartConsumersCommand(ServerCommand):
                 return worker
         return {}
 
-    async def run_consumer(self, worker, topic, arguments):
+    async def run_consumer(self, worker, topic, worker_conf):
         '''
         Run the consumer in a way that makes sure we exit
         if the consumer throws an error
@@ -58,11 +54,11 @@ class StartConsumersCommand(ServerCommand):
         aiotask_context.set('request', request)
 
         try:
-            await worker(topic, request, arguments, app_settings)
+            await worker(topic, request, worker_conf, app_settings)
         except Exception:
             logger.error('Error running consumer', exc_info=True)
             await topic.stop()
-            raise
+            exit(1)
 
     def init_worker(self, worker_name, arguments):
         worker = self.get_worker(worker_name)
@@ -94,6 +90,6 @@ class StartConsumersCommand(ServerCommand):
                         'metadata_max_age_ms': 5000,
                     })
                 self.tasks.append(
-                    self.run_consumer(worker['handler'], consumer, arguments))
+                    self.run_consumer(worker['handler'], consumer, worker))
         asyncio.gather(*self.tasks, loop=self.get_loop())
         return super().run(arguments, settings, app)
