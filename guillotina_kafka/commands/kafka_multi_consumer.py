@@ -4,6 +4,7 @@ import aiotask_context
 from guillotina import app_settings
 from aiokafka import AIOKafkaConsumer
 from guillotina.tests.utils import login
+from aiokafka.errors import IllegalStateError
 from guillotina.utils import resolve_dotted_name
 from guillotina.commands.server import ServerCommand
 from guillotina.tests.utils import get_mocked_request
@@ -76,7 +77,6 @@ class StartConsumersCommand(ServerCommand):
 
     def run(self, arguments, settings, app):
         self.tasks = []
-        self.evry = arguments.check_interval
         for worker_name in arguments.consumer_worker:
             worker = self.init_worker(worker_name, arguments)
             for topic in worker['topics']:
@@ -93,3 +93,46 @@ class StartConsumersCommand(ServerCommand):
                     self.run_consumer(worker['handler'], consumer, worker))
         asyncio.gather(*self.tasks, loop=self.get_loop())
         return super().run(arguments, settings, app)
+
+
+class BaseConsumerWorker:
+
+    def __init__(self, msg_deserializer=lambda data: data.decode('utf-8')):
+        self.msg_deserializer = msg_deserializer
+        self.ready = False
+
+    async def seek(self, topic, step):
+        for tp in topic.assignment():
+            try:
+                position = await topic.position(tp)
+            except IllegalStateError:
+                position = 0
+
+            if position > 0:
+                topic.seek(tp, position + step)
+        return topic
+
+    async def reposition_offset(self, topic, position):
+
+        try:
+            position = int(position)
+        except ValueError:
+            pass
+        else:
+            return await self.seek(topic, position)
+
+        try:
+            await {
+                'beginning': topic.seek_to_beginning,
+                'end': topic.seek_to_end,
+            }[position]()
+        except KeyError:
+            raise Exception('Invalid offset position')
+
+        return topic
+
+    async def setup(self):
+        raise NotImplementedError()
+
+    async def __call__(self, topic, request, worker_conf, settings):
+        raise NotImplementedError()
