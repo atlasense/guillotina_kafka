@@ -1,6 +1,13 @@
 Changelog
 =========
 
+2.2.0
+-----
+
+- Add `guillotina_kafka.interfaces.IKafkaMessageConsumedEvent` event
+  [vangheem]
+
+
 2.1.8
 -----
 
