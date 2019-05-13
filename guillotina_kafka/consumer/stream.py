@@ -1,13 +1,12 @@
+from aiokafka import TopicPartition
+from aiokafka.errors import IllegalStateError
 from guillotina import configure
-from zope.interface import implementer
+from guillotina.event import notify
 from guillotina_kafka.consumer import Consumer
+from guillotina_kafka.events import KafkaMessageConsumedEvent
 from guillotina_kafka.interfaces import IConsumer
 from guillotina_kafka.interfaces import IConsumerUtility
-
-from aiokafka import TopicPartition
-from aiokafka.errors import KafkaError
-from aiokafka.errors import KafkaTimeoutError
-from aiokafka.errors import IllegalStateError
+from zope.interface import implementer
 
 
 @implementer(IConsumer)
@@ -56,6 +55,7 @@ class StreamConsumerUtility:
             await self.consumer.seek(step=-1) # Move to the previous offset
             async for message in self.consumer:
                 _ = await self.consumer.worker(message, arguments=arguments, settings=settings)
+                await notify(KafkaMessageConsumedEvent(message))
         finally:
             await self.consumer.stop()
             print('Stoped StreamConsumerUtility.')

@@ -31,3 +31,9 @@ class IConsumer(IKafka):
 class IConsumerUtility(Interface):
     async def consume():
         pass
+
+
+class IKafkaMessageConsumedEvent(Interface):
+    '''
+    New message consumed by kafka
+    '''
