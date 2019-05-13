@@ -37,3 +37,9 @@ class IKafkaMessageConsumedEvent(Interface):
     '''
     New message consumed by kafka
     '''
+
+
+class IKafkaMessageProducedEvent(Interface):
+    '''
+    New message produced
+    '''

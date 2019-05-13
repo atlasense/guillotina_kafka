@@ -5,6 +5,8 @@ from guillotina import app_settings
 from aiokafka import AIOKafkaProducer
 from guillotina.component import get_utility
 from guillotina_kafka.interfaces import IKafkaProducerUtility
+from guillotina_kafka.events import KafkaMessageProducedEvent
+from guillotina.event import notify
 
 
 @configure.utility(provides=IKafkaProducerUtility)
@@ -40,7 +42,9 @@ class KafkaProducerUtility:
     async def send(self, *args, **kwargs):
         if not self.is_ready:
             raise Exception('Producer utility is not ready')
-        return await self.producer.send(*args, **kwargs)
+        result = await self.producer.send(*args, **kwargs)
+        await notify(KafkaMessageProducedEvent(result, self))
+        return result
 
     async def stop(self):
         if not self.is_ready:
