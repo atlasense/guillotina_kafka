@@ -55,7 +55,7 @@ class StreamConsumerUtility:
             await self.consumer.seek(step=-1) # Move to the previous offset
             async for message in self.consumer:
                 _ = await self.consumer.worker(message, arguments=arguments, settings=settings)
-                await notify(KafkaMessageConsumedEvent(message))
+                await notify(KafkaMessageConsumedEvent(message, self))
         finally:
             await self.consumer.stop()
             print('Stoped StreamConsumerUtility.')
