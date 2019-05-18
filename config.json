@@ -44,37 +44,6 @@
     },
     "kafka": {
         "topic_prefix": "dev-",
-        "brokers": [
-            "localhost:9092"
-        ],
-        "consumer": {
-            "workers": [
-                {
-                    "name": "multi-default",
-                    "group": "default",
-                    "topics": ["default-topic"],
-                    "path": "guillotina_kafka.consumer.multi_default_worker"
-                },
-                {
-                    "name": "multi-es",
-                    "group": "es-group",
-                    "topics": ["es-topic"],
-                    "path": "guillotina_kafka.consumer.multi_es_worker"
-                },
-                {
-                    "name": "default",
-                    "group": "default",
-                    "topics": ["default-topic"],
-                    "path": "guillotina_kafka.consumer.default_worker"
-                },
-                {
-                    "name": "es",
-                    "group": "es-group",
-                    "topics": ["es-topic"],
-                    "path": "guillotina_kafka.consumer.es_worker"
-                }
-            ],
-            "topics": ["test-topic"]
-        }
+        "brokers": ["localhost:9092"]
     }
 }

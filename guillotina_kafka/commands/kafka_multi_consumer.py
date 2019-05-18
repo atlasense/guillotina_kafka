@@ -10,6 +10,7 @@ from guillotina.utils import resolve_dotted_name
 from guillotina.commands.server import ServerCommand
 from guillotina.tests.utils import get_mocked_request
 from guillotina_kafka.consumer import ConsumerWorkerLookupError
+from guillotina_kafka.commands.kafka_consumer import StartConsumerCommand
 
 logger = logging.getLogger(__name__)
 
@@ -18,9 +19,7 @@ class StopConsumerException(Exception):
     pass
 
 
-class StartConsumersCommand(ServerCommand):
-
-    description = 'Start Kafka consumer'
+class StartConsumersCommand(StartConsumerCommand):
 
     def get_parser(self):
         parser = super(StartConsumersCommand, self).get_parser()
@@ -33,18 +32,6 @@ class StartConsumersCommand(ServerCommand):
             default='auto', help='Kafka server api version.'
         )
         return parser
-
-    def get_worker(self, name):
-        for worker in app_settings['kafka']['consumer']['workers']:
-            if name == worker['name']:
-                worker = {
-                    **worker, "topics": list({
-                        *worker.get('topics', []),
-                        *app_settings['kafka']['consumer'].get('topics', [])
-                    })
-                }
-                return worker
-        return {}
 
     async def run_consumer(self, worker, topic, worker_conf):
         '''
@@ -78,6 +65,7 @@ class StartConsumersCommand(ServerCommand):
 
     def run(self, arguments, settings, app):
         self.tasks = []
+        self.init_producers()
         for worker_name in arguments.consumer_worker:
             worker = self.init_worker(worker_name, arguments)
             for topic in worker['topics']:

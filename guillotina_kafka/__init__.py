@@ -15,18 +15,25 @@ app_settings = {
         "brokers": [
             "localhost:9092"
         ],
+        "producer": {
+            "request_timeout_ms": 5000,
+            "key_serializer": lambda data: data.encode('utf-8'),
+            "value_serializer": lambda data: data.encode('utf-8'),
+        },
         "consumer": {
             "workers": [
                 {
                     "name": "multi-default",
                     "group": "default",
                     "topics": ["default-topic"],
+                    "provide_producer_for": "default-topic",
                     "path": "guillotina_kafka.consumer.multi_default_worker"
                 },
                 {
                     "name": "multi-es",
                     "group": "es-group",
                     "topics": ["es-topic"],
+                    "provide_producer_for": "es-topic",
                     "path": "guillotina_kafka.consumer.multi_es_worker"
                 },
                 {
