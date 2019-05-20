@@ -10,7 +10,7 @@ from guillotina_kafka.consumer.batch import BatchConsumer
 from guillotina_kafka.consumer import InvalidConsumerType
 from guillotina_kafka.consumer.stream import StreamConsumer
 from guillotina_kafka.consumer import ConsumerWorkerLookupError
-
+from guillotina_kafka.utilities import register_producer
 
 logger = logging.getLogger(__name__)
 
@@ -130,10 +130,14 @@ class StartConsumerCommand(ServerCommand):
             logger.error('Error running consumer', exc_info=True)
             sys.exit(1)
 
+    def init_producers(self):
+        for worker in app_settings['kafka']['consumer']['workers']:
+            register_producer(worker.get('name'))
+
     def run(self, arguments, settings, app):
+        self.init_producers()
         consumer = self.get_consumer(arguments)
-        loop = self.get_loop()
         asyncio.ensure_future(
             self.run_consumer(consumer, arguments),
-            loop=loop)
+            loop=self.get_loop())
         return super().run(arguments, settings, app)
