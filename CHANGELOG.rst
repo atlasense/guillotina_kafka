@@ -4,6 +4,12 @@ Changelog
 2.2.0
 -----
 
+- allow regex topics for multi consumers
+  [ableeb]
+
+2.2.0
+-----
+
 - Add `guillotina_kafka.interfaces.IKafkaMessageConsumedEvent` event
   [vangheem]
 
