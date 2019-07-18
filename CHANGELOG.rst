@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.2.0
+2.2.1
 -----
 
 - allow regex topics for multi consumers
