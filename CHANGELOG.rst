@@ -1,6 +1,12 @@
 Changelog
 =========
 
+2.2.1
+-----
+
+- allow regex topics for multi consumers
+  [ableeb]
+
 2.2.0
 -----
 
