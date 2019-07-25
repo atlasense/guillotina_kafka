@@ -101,14 +101,17 @@ class StartConsumerCommand(ServerCommand):
             cli_topic = arguments.regex_topic
 
         try:
+            topics = cli_topic or settings_topics
+            if len(topics) == 0:
+                raise Exception('No topics found')
             consumer = {
                 'batch': BatchConsumer,
                 'stream': StreamConsumer,
             }[arguments.consumer_type](
-                cli_topic or settings_topics,
+                topics,
                 worker=consumer_worker,
-                group_id=arguments.consumer_group or worker.get(
-                    'group', 'default'),
+                group_id=(
+                    arguments.consumer_group or worker.get('group', 'default')).format(topic=topics[0]),
                 api_version=arguments.api_version,
                 bootstrap_servers=app_settings['kafka']['brokers']
             )

@@ -92,10 +92,12 @@ class StartConsumersCommand(ServerCommand):
                     })
             else:
                 for topic in worker['topics']:
+                    topic_id = f'{topic_prefix}{topic}'
                     consumer = AIOKafkaConsumer(
-                        f'{topic_prefix}{topic}', **{
+                        topic_id, **{
                             "api_version": arguments.api_version,
-                            "group_id": worker.get("group", "default"),
+                            "group_id": worker.get("group", "default").format(
+                                topic=topic_id),
                             "bootstrap_servers": app_settings['kafka']['brokers'],
                             'loop': self.get_loop(),
                             'metadata_max_age_ms': 5000,
