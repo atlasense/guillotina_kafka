@@ -1,6 +1,12 @@
 Changelog
 =========
 
+2.2.2
+-----
+
+- allow providing group ids that contain the topic name in them: "{topic}-group"
+  [vangheem]
+
 2.2.1
 -----
 

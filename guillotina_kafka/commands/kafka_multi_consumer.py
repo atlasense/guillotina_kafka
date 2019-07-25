@@ -78,7 +78,11 @@ class StartConsumersCommand(ServerCommand):
 
     def run(self, arguments, settings, app):
         self.tasks = []
-        for worker_name in arguments.consumer_worker:
+        worker_names = arguments.consumer_worker
+        if isinstance(worker_names, str):
+            # we could just specify one here
+            worker_names = [worker_names]
+        for worker_name in worker_names:
             worker = self.init_worker(worker_name, arguments)
             topic_prefix = app_settings["kafka"].get("topic_prefix", "")
             if worker.get('regex_topic'):
@@ -92,10 +96,12 @@ class StartConsumersCommand(ServerCommand):
                     })
             else:
                 for topic in worker['topics']:
+                    topic_id = f'{topic_prefix}{topic}'
                     consumer = AIOKafkaConsumer(
-                        f'{topic_prefix}{topic}', **{
+                        topic_id, **{
                             "api_version": arguments.api_version,
-                            "group_id": worker.get("group", "default"),
+                            "group_id": worker.get("group", "default").format(
+                                topic=topic_id),
                             "bootstrap_servers": app_settings['kafka']['brokers'],
                             'loop': self.get_loop(),
                             'metadata_max_age_ms': 5000,
