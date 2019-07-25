@@ -78,7 +78,11 @@ class StartConsumersCommand(ServerCommand):
 
     def run(self, arguments, settings, app):
         self.tasks = []
-        for worker_name in arguments.consumer_worker:
+        worker_names = arguments.consumer_worker
+        if isinstance(worker_names, str):
+            # we could just specify one here
+            worker_names = [worker_names]
+        for worker_name in worker_names:
             worker = self.init_worker(worker_name, arguments)
             topic_prefix = app_settings["kafka"].get("topic_prefix", "")
             if worker.get('regex_topic'):
