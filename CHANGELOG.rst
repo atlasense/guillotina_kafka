@@ -1,6 +1,12 @@
 Changelog
 =========
 
+2.2.3
+-----
+
+- Fix multi consumer to work when consuming from multiple topics
+  [vangheem]
+
 2.2.2
 -----
 
