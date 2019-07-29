@@ -87,27 +87,29 @@ class StartConsumersCommand(ServerCommand):
             topic_prefix = app_settings["kafka"].get("topic_prefix", "")
             if worker.get('regex_topic'):
                 consumer = AIOKafkaConsumer(
-                     **{
+                    **{
                         "api_version": arguments.api_version,
                         "group_id": worker.get("group", "default"),
                         "bootstrap_servers": app_settings['kafka']['brokers'],
                         'loop': self.get_loop(),
                         'metadata_max_age_ms': 5000,
                     })
+                self.tasks.append(
+                    self.run_consumer(worker['handler'], consumer, worker))
             else:
                 for topic in worker['topics']:
                     topic_id = f'{topic_prefix}{topic}'
+                    group_id = worker.get("group", "default").format(topic=topic_id)
                     consumer = AIOKafkaConsumer(
                         topic_id, **{
                             "api_version": arguments.api_version,
-                            "group_id": worker.get("group", "default").format(
-                                topic=topic_id),
+                            "group_id": group_id,
                             "bootstrap_servers": app_settings['kafka']['brokers'],
                             'loop': self.get_loop(),
                             'metadata_max_age_ms': 5000,
                         })
-            self.tasks.append(
-                self.run_consumer(worker['handler'], consumer, worker))
+                    self.tasks.append(
+                        self.run_consumer(worker['handler'], consumer, worker))
         asyncio.gather(*self.tasks, loop=self.get_loop())
         return super().run(arguments, settings, app)
 
