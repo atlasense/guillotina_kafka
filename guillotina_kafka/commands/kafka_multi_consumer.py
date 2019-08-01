@@ -1,15 +1,16 @@
-import os
-import asyncio
-import logging
-import aiotask_context
-from guillotina import app_settings
 from aiokafka import AIOKafkaConsumer
-from guillotina.tests.utils import login
 from aiokafka.errors import IllegalStateError
-from guillotina.utils import resolve_dotted_name
+from guillotina import app_settings
 from guillotina.commands.server import ServerCommand
 from guillotina.tests.utils import get_mocked_request
+from guillotina.tests.utils import login
+from guillotina.utils import resolve_dotted_name
 from guillotina_kafka.consumer import ConsumerWorkerLookupError
+
+import aiotask_context
+import asyncio
+import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -83,12 +84,12 @@ class StartConsumersCommand(ServerCommand):
             # we could just specify one here
             worker_names = [worker_names]
 
-        conn_settings = {        
+        conn_settings = {
             "api_version": arguments.api_version,
             "bootstrap_servers": app_settings['kafka']['brokers'],
             'loop': self.get_loop(),
         }
-        conn_settings.update(app_settings['kafka']['consumer'].get('connection_settings', {}))
+        conn_settings.update(app_settings['kafka'].get('consumer_connection_settings', {}))
 
         for worker_name in worker_names:
             worker = self.init_worker(worker_name, arguments)

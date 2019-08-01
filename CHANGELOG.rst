@@ -4,6 +4,9 @@ Changelog
 2.2.6
 -----
 
+- be able configure consumers with dictionary so they can be updated with env vars
+  [vangheem]
+
 - be able to configure kafka consumer connection
   [vangheem]
 
