@@ -20,7 +20,7 @@ setup(
     long_description=README,
     install_requires=[
         'guillotina',
-        'aiokafka==0.4.2'
+        'aiokafka'
     ],
     author='Sekou Oumar',
     author_email='sekou@onna.com',

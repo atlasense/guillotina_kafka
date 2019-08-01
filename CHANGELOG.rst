@@ -1,6 +1,12 @@
 Changelog
 =========
 
+2.2.4
+-----
+
+- Remove kafka version pin
+  [vangheem]
+
 2.2.3
 -----
 
