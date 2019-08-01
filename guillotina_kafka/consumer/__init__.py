@@ -97,11 +97,14 @@ class Consumer(object):
         self.worker = worker
         self._consumer = None
 
-        self.config = {
+        conn_settings = {
+            "bootstrap_servers": app_settings['kafka']['brokers'],
             'loop': loop or asyncio.get_event_loop(),
-            'metadata_max_age_ms': 5000,
-            **kwargs
         }
+        conn_settings.update(kwargs)
+        conn_settings.update(app_settings['kafka'].get('consumer_connection_settings', {}))
+
+        self.config = conn_settings
 
     async def init(self):
         if self._consumer is None:

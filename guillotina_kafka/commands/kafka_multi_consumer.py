@@ -82,18 +82,21 @@ class StartConsumersCommand(ServerCommand):
         if isinstance(worker_names, str):
             # we could just specify one here
             worker_names = [worker_names]
+
+        conn_settings = {        
+            "api_version": arguments.api_version,
+            "bootstrap_servers": app_settings['kafka']['brokers'],
+            'loop': self.get_loop(),
+        }
+        conn_settings.update(app_settings['kafka'].get('consumer_connection_settings', {}))
+
         for worker_name in worker_names:
             worker = self.init_worker(worker_name, arguments)
             topic_prefix = app_settings["kafka"].get("topic_prefix", "")
             if worker.get('regex_topic'):
                 consumer = AIOKafkaConsumer(
-                    **{
-                        "api_version": arguments.api_version,
-                        "group_id": worker.get("group", "default"),
-                        "bootstrap_servers": app_settings['kafka']['brokers'],
-                        'loop': self.get_loop(),
-                        'metadata_max_age_ms': 5000,
-                    })
+                    group_id=worker.get("group", "default"),
+                    **conn_settings)
                 self.tasks.append(
                     self.run_consumer(worker['handler'], consumer, worker))
             else:
@@ -101,13 +104,8 @@ class StartConsumersCommand(ServerCommand):
                     topic_id = f'{topic_prefix}{topic}'
                     group_id = worker.get("group", "default").format(topic=topic_id)
                     consumer = AIOKafkaConsumer(
-                        topic_id, **{
-                            "api_version": arguments.api_version,
-                            "group_id": group_id,
-                            "bootstrap_servers": app_settings['kafka']['brokers'],
-                            'loop': self.get_loop(),
-                            'metadata_max_age_ms': 5000,
-                        })
+                        topic_id, group_id=group_id,
+                        **conn_settings)
                     self.tasks.append(
                         self.run_consumer(worker['handler'], consumer, worker))
         asyncio.gather(*self.tasks, loop=self.get_loop())
