@@ -102,7 +102,7 @@ class Consumer(object):
             'loop': loop or asyncio.get_event_loop(),
         }
         conn_settings.update(kwargs)
-        conn_settings.update(app_settings['kafka'].get('consumer_connection_settings', {}))
+        conn_settings.update(app_settings['kafka']['consumer'].get('connection_settings', {}))
 
         self.config = conn_settings
 

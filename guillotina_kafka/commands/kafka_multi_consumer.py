@@ -88,7 +88,7 @@ class StartConsumersCommand(ServerCommand):
             "bootstrap_servers": app_settings['kafka']['brokers'],
             'loop': self.get_loop(),
         }
-        conn_settings.update(app_settings['kafka'].get('consumer_connection_settings', {}))
+        conn_settings.update(app_settings['kafka']['consumer'].get('connection_settings', {}))
 
         for worker_name in worker_names:
             worker = self.init_worker(worker_name, arguments)

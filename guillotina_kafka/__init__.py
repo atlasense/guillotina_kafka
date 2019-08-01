@@ -15,10 +15,10 @@ app_settings = {
         "brokers": [
             "localhost:9092"
         ],
-        "consumer_connection_settings": {
-
-        },
         "consumer": {
+            "connection_settings": {
+
+            },
             "workers": [
                 {
                     "name": "multi-default",
