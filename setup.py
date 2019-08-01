@@ -12,7 +12,6 @@ try:
 except IOError:
     VERSION = None
 
-
 setup(
     name='guillotina_kafka',
     version=VERSION,
