@@ -2,13 +2,16 @@ from aiokafka import AIOKafkaConsumer
 from aiokafka.errors import IllegalStateError
 from guillotina import app_settings
 from guillotina.commands.server import ServerCommand
+from guillotina.component import provide_utility
 from guillotina.tests.utils import get_mocked_request
 from guillotina.tests.utils import login
 from guillotina.utils import resolve_dotted_name
 from guillotina_kafka.consumer import ConsumerWorkerLookupError
+from guillotina_kafka.interfaces import IActiveConsumer
 
 import aiotask_context
 import asyncio
+import inspect
 import logging
 import os
 
@@ -56,6 +59,10 @@ class StartConsumersCommand(ServerCommand):
         login(request)
         aiotask_context.set('request', request)
 
+        if inspect.isclass(worker):
+            worker = worker()
+
+        provide_utility(worker, IActiveConsumer, worker_conf['name'])
         try:
             await worker(topic, request, worker_conf, app_settings)
         except Exception:
@@ -94,10 +101,15 @@ class StartConsumersCommand(ServerCommand):
         for worker_name in worker_names:
             worker = self.init_worker(worker_name, arguments)
             topic_prefix = app_settings["kafka"].get("topic_prefix", "")
+            worker_conn_settings = {
+                **conn_settings,
+                **(getattr(worker['handler'], 'connection_settings', {}) or {}),
+                **(worker.get('connection_settings') or {}),
+            }
             if worker.get('regex_topic'):
                 consumer = AIOKafkaConsumer(
                     group_id=worker.get("group", "default"),
-                    **conn_settings)
+                    **worker_conn_settings)
                 self.tasks.append(
                     self.run_consumer(worker['handler'], consumer, worker))
             else:
@@ -105,8 +117,7 @@ class StartConsumersCommand(ServerCommand):
                     topic_id = f'{topic_prefix}{topic}'
                     group_id = worker.get("group", "default").format(topic=topic_id)
                     consumer = AIOKafkaConsumer(
-                        topic_id, group_id=group_id,
-                        **conn_settings)
+                        topic_id, group_id=group_id, **worker_conn_settings)
                     self.tasks.append(
                         self.run_consumer(worker['handler'], consumer, worker))
         asyncio.gather(*self.tasks, loop=self.get_loop())

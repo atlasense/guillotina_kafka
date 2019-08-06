@@ -1,6 +1,16 @@
 Changelog
 =========
 
+2.2.7
+-----
+
+- Be able to run consumers without a singleton
+  [vangheem]
+
+- Be able to configure connection settings from consumer
+  [vangheem]
+
+
 2.2.6
 -----
 

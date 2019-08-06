@@ -37,3 +37,7 @@ class IKafkaMessageConsumedEvent(Interface):
     '''
     New message consumed by kafka
     '''
+
+
+class IActiveConsumer(Interface):
+    pass
