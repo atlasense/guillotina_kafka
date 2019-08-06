@@ -1,16 +1,18 @@
-import sys
+from guillotina import app_settings
+from guillotina.commands.server import ServerCommand
+from guillotina.component import get_adapter
+from guillotina.component import provide_utility
+from guillotina.utils import resolve_dotted_name
+from guillotina_kafka.consumer import ConsumerWorkerLookupError
+from guillotina_kafka.consumer import InvalidConsumerType
+from guillotina_kafka.consumer.batch import BatchConsumer
+from guillotina_kafka.consumer.stream import StreamConsumer
+from guillotina_kafka.interfaces import IActiveConsumer
+from guillotina_kafka.interfaces import IConsumerUtility
+
 import asyncio
 import logging
-from guillotina import app_settings
-from guillotina.component import get_adapter
-from guillotina.utils import resolve_dotted_name
-from guillotina.commands.server import ServerCommand
-from guillotina_kafka.interfaces import IConsumerUtility
-from guillotina_kafka.consumer.batch import BatchConsumer
-from guillotina_kafka.consumer import InvalidConsumerType
-from guillotina_kafka.consumer.stream import StreamConsumer
-from guillotina_kafka.consumer import ConsumerWorkerLookupError
-
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -127,6 +129,7 @@ class StartConsumerCommand(ServerCommand):
         Run the consumer in a way that makes sure we exit
         if the consumer throws an error
         '''
+        provide_utility(consumer, IActiveConsumer, '__main__')
         try:
             await consumer.consume(arguments, app_settings)
         except Exception:
