@@ -1,6 +1,11 @@
 Changelog
 =========
 
+2.2.8
+-----
+
+- handle possible issue exiting pod
+
 2.2.7
 -----
 

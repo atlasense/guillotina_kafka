@@ -67,7 +67,10 @@ class StartConsumersCommand(ServerCommand):
             await worker(topic, request, worker_conf, app_settings)
         except Exception:
             logger.error('Error running consumer', exc_info=True)
-            await topic.stop()
+            try:
+                await topic.stop()
+            except Exception:
+                pass
             os._exit(1)
 
     def init_worker(self, worker_name, arguments):
