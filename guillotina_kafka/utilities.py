@@ -16,19 +16,34 @@ class KafkaProducerUtility:
         # Get kafka connection details from app settings
         self.loop = loop
         self.producer = None
+        self._lock = None
+
+    @property
+    def lock(self):
+        if self._lock is None:
+            self._lock = asyncio.Lock()
+        return self._lock
 
     async def setup(self, **kwargs):
         """Gets or creates the connection to kafka"""
-        self.config = {**{
-            'bootstrap_servers': app_settings['kafka']['brokers'],
-            'value_serializer': lambda data: json.dumps(data).encode('utf-8')
-        }, **kwargs}
-        self.config.setdefault(
-            'loop', self.loop or asyncio.get_event_loop())
-        if self.producer is None:
-            self.producer = AIOKafkaProducer(**self.config)
-            await self.producer.start()
-        return self.producer
+        async with self.lock:
+            # make configuration is locked so multiple tasks can't attempt
+            if self.is_ready:
+                return
+            self.config = {**{
+                'bootstrap_servers': app_settings['kafka']['brokers'],
+                'value_serializer': lambda data: json.dumps(data).encode('utf-8')
+            }, **kwargs}
+            self.config.setdefault(
+                'loop', self.loop or asyncio.get_event_loop())
+            if self.producer is None:
+                producer = AIOKafkaProducer(**self.config)
+                await producer.start()
+                # delay setting the value until after the producer object
+                # is setup; otherwise, other async tasks will attempt
+                # to use this object before it is ready and get errors
+                self.producer = producer
+            return self.producer
 
     @property
     def is_ready(self):

@@ -1,6 +1,12 @@
 Changelog
 =========
 
+2.2.9
+-----
+
+- Fix asyncio concurrency issues when setting up producer object
+
+
 2.2.8
 -----
 
