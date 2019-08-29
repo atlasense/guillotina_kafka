@@ -1,4 +1,3 @@
-import aiotask_context
 import json
 import pytest
 import asyncio

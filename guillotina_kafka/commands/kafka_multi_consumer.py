@@ -1,6 +1,6 @@
 from aiokafka import AIOKafkaConsumer
 from aiokafka.errors import IllegalStateError
-from guillotina import app_settings
+from guillotina import app_settings, task_vars
 from guillotina.commands.server import ServerCommand
 from guillotina.component import provide_utility
 from guillotina.tests.utils import get_mocked_request
@@ -9,7 +9,6 @@ from guillotina.utils import resolve_dotted_name
 from guillotina_kafka.consumer import ConsumerWorkerLookupError
 from guillotina_kafka.interfaces import IActiveConsumer
 
-import aiotask_context
 import asyncio
 import inspect
 import logging
@@ -56,8 +55,8 @@ class StartConsumersCommand(ServerCommand):
         if the consumer throws an error
         '''
         request = get_mocked_request()
-        login(request)
-        aiotask_context.set('request', request)
+        login()
+        task_vars.request.set(request)
 
         if inspect.isclass(worker):
             worker = worker()

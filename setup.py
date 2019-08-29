@@ -18,7 +18,7 @@ setup(
     description='Guillotina Kafka add-on',
     long_description=README,
     install_requires=[
-        'guillotina',
+        'guillotina>5.0.0.dev0',
         'aiokafka'
     ],
     author='Sekou Oumar',
