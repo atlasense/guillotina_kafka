@@ -1,6 +1,12 @@
 Changelog
 =========
 
+2.3.1
+-----
+
+- Add ConsumerGroupeRebalancer listener to start consuming from the previous offset
+on every partition assignment
+
 2.3.0
 -----
 
