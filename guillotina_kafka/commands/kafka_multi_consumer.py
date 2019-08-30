@@ -191,7 +191,7 @@ class ConsumerGroupeRebalancer(ConsumerRebalanceListener):
            starts fetching data again.
 
         Arguments:
-            assigned {TopicPartition} -- Topic and partition assigned
+            assigned {TopicPartition} -- List of topics and partitions assigned
             to a given consumer.
         """
         for tp in assigned:
