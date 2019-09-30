@@ -28,11 +28,11 @@ class KafkaProducerUtility:
         for name, worker in get_utilities_for(IActiveConsumer):
             if hasattr(worker, '__consumer__') and not getattr(worker, '__stopped__', False):
                 try:
-                    print(f'Stopping {name} consumer')
+                    logging.warning(f'Stopping {name} consumer')
                     await worker.__consumer__.stop()
                     worker.__stopped__ = True
                 except Exception:
-                    logger.warning("Error stopping consumer", exc_info=True)
+                    logger.warning(f"Error stopping consumer: {name}", exc_info=True)
 
     @property
     def lock(self):
