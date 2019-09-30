@@ -25,7 +25,6 @@ class KafkaProducerUtility:
         self._lock = None
 
     async def stop_active_consumers(self):
-        logging.warning(f'Stopping consumers')
         for name, worker in get_utilities_for(IActiveConsumer):
             if hasattr(worker, '__consumer__') and not getattr(worker, '__stopped__', False):
                 try:
