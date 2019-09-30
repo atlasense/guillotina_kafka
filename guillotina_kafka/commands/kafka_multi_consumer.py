@@ -71,6 +71,8 @@ class StartConsumersCommand(ServerCommand):
 
         if inspect.isclass(worker):
             worker = worker()
+        # store __consumer__ here so we can shut this consumer down on exit
+        # by looking up the utiltiy
         worker.__consumer__ = consumer
         provide_utility(worker, IActiveConsumer, worker_conf["name"])
         try:
