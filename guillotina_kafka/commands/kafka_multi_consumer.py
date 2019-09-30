@@ -1,16 +1,20 @@
 from aiokafka import AIOKafkaConsumer
 from aiokafka import ConsumerRebalanceListener
-from aiokafka.structs import TopicPartition
 from aiokafka.errors import IllegalStateError
-from guillotina import app_settings, task_vars
+from aiokafka.structs import TopicPartition
+from guillotina import app_settings
+from guillotina import task_vars
 from guillotina.commands.server import ServerCommand
+from guillotina.component import get_utility
 from guillotina.component import provide_utility
 from guillotina.tests.utils import get_mocked_request
 from guillotina.tests.utils import login
 from guillotina.utils import resolve_dotted_name
 from guillotina_kafka.consumer import ConsumerWorkerLookupError
 from guillotina_kafka.interfaces import IActiveConsumer
+from guillotina_kafka.interfaces import IKafkaProducerUtility
 from typing import List
+
 import asyncio
 import inspect
 import logging
@@ -56,7 +60,7 @@ class StartConsumersCommand(ServerCommand):
                 return worker
         return {}
 
-    async def run_consumer(self, worker, topic, worker_conf):
+    async def run_consumer(self, worker, consumer, worker_conf):
         """
         Run the consumer in a way that makes sure we exit
         if the consumer throws an error
@@ -67,14 +71,18 @@ class StartConsumersCommand(ServerCommand):
 
         if inspect.isclass(worker):
             worker = worker()
-
+        # store __consumer__ here so we can shut this consumer down on exit
+        # by looking up the utiltiy
+        worker.__consumer__ = consumer
         provide_utility(worker, IActiveConsumer, worker_conf["name"])
         try:
-            await worker(topic, request, worker_conf, app_settings)
+            await worker(consumer, request, worker_conf, app_settings)
         except Exception:
             logger.error("Error running consumer", exc_info=True)
+        finally:
+            util = get_utility(IKafkaProducerUtility)
             try:
-                await topic.stop()
+                await util.stop_active_consumers()
             except Exception:
                 pass
             os._exit(1)

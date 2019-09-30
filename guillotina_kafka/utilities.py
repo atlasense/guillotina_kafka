@@ -1,10 +1,16 @@
-import json
-import asyncio
-from guillotina import configure
-from guillotina import app_settings
 from aiokafka import AIOKafkaProducer
+from guillotina import app_settings
+from guillotina import configure
+from guillotina.component import get_utilities_for
 from guillotina.component import get_utility
+from guillotina_kafka.interfaces import IActiveConsumer
 from guillotina_kafka.interfaces import IKafkaProducerUtility
+
+import asyncio
+import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @configure.utility(provides=IKafkaProducerUtility)
@@ -17,6 +23,16 @@ class KafkaProducerUtility:
         self.loop = loop
         self.producer = None
         self._lock = None
+
+    async def stop_active_consumers(self):
+        for name, worker in get_utilities_for(IActiveConsumer):
+            if hasattr(worker, '__consumer__') and not getattr(worker, '__stopped__', False):
+                try:
+                    logging.warning(f'Stopping {name} consumer')
+                    await worker.__consumer__.stop()
+                    worker.__stopped__ = True
+                except Exception:
+                    logger.warning(f"Error stopping consumer: {name}", exc_info=True)
 
     @property
     def lock(self):

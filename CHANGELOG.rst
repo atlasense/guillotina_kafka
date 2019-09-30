@@ -1,6 +1,12 @@
 Changelog
 =========
 
+2.3.2
+-----
+
+- Make sure to stop consumers on application exit
+  [vangheem]
+
 2.3.1
 -----
 
