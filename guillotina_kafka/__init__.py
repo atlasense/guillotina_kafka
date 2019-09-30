@@ -46,7 +46,7 @@ app_settings = {
             ],
             "topics": ["test-topic"]
         }
-    }
+    },
 }
 
 
@@ -57,3 +57,4 @@ def includeme(root):
     configure.scan('guillotina_kafka.api')
     configure.scan('guillotina_kafka.utilities')
     configure.scan('guillotina_kafka.install')
+    configure.scan('guillotina_kafka.subscribers')
