@@ -1,6 +1,11 @@
 Changelog
 =========
 
+2.3.3
+-----
+
+- Be able to import mypy
+
 2.3.2
 -----
 

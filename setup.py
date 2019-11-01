@@ -25,6 +25,7 @@ setup(
     author_email='sekou@onna.com',
     url='',
     packages=find_packages(exclude=['demo']),
+    package_data={"": ["*.txt", "*.rst"], "guillotina_kafka": ["py.typed"]},
     include_package_data=True,
     tests_require=[
         'pytest',
