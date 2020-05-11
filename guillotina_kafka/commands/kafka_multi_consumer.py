@@ -1,24 +1,20 @@
-from aiokafka import AIOKafkaConsumer
-from aiokafka import ConsumerRebalanceListener
-from aiokafka.errors import IllegalStateError
-from aiokafka.structs import TopicPartition
-from guillotina import app_settings
-from guillotina import task_vars
-from guillotina.commands.server import ServerCommand
-from guillotina.component import get_utility
-from guillotina.component import provide_utility
-from guillotina.tests.utils import get_mocked_request
-from guillotina.tests.utils import login
-from guillotina.utils import resolve_dotted_name
-from guillotina_kafka.consumer import ConsumerWorkerLookupError
-from guillotina_kafka.interfaces import IActiveConsumer
-from guillotina_kafka.interfaces import IKafkaProducerUtility
-from typing import List
-
 import asyncio
 import inspect
 import logging
 import os
+from typing import List
+
+from aiokafka import AIOKafkaConsumer, ConsumerRebalanceListener
+from aiokafka.errors import IllegalStateError
+from aiokafka.structs import TopicPartition
+from guillotina import app_settings, task_vars
+from guillotina.commands.server import ServerCommand
+from guillotina.component import get_utility, provide_utility
+from guillotina.tests.utils import get_mocked_request, login
+from guillotina.utils import resolve_dotted_name
+
+from guillotina_kafka.consumer import ConsumerWorkerLookupError
+from guillotina_kafka.interfaces import IActiveConsumer, IKafkaProducerUtility
 
 logger = logging.getLogger(__name__)
 

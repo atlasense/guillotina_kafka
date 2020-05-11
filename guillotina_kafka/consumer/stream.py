@@ -2,16 +2,15 @@ from aiokafka import TopicPartition
 from aiokafka.errors import IllegalStateError
 from guillotina import configure
 from guillotina.event import notify
+from zope.interface import implementer
+
 from guillotina_kafka.consumer import Consumer
 from guillotina_kafka.events import KafkaMessageConsumedEvent
-from guillotina_kafka.interfaces import IConsumer
-from guillotina_kafka.interfaces import IConsumerUtility
-from zope.interface import implementer
+from guillotina_kafka.interfaces import IConsumer, IConsumerUtility
 
 
 @implementer(IConsumer)
 class StreamConsumer(Consumer):
-
     async def _seek(self, topic, step):
         partition = self._consumer.partitions_for_topic(topic)
         if not partition:
@@ -38,10 +37,8 @@ class StreamConsumer(Consumer):
         return await self.init()
 
 
-@configure.adapter(
-    for_=IConsumer, provides=IConsumerUtility, name='stream')
+@configure.adapter(for_=IConsumer, provides=IConsumerUtility, name="stream")
 class StreamConsumerUtility:
-
     def __init__(self, consumer: StreamConsumer):
         self.consumer = consumer
 
@@ -51,11 +48,13 @@ class StreamConsumerUtility:
             await self.consumer.init()
 
         try:
-            print('Starting StreamConsumerUtility ...')
-            await self.consumer.seek(step=-1) # Move to the previous offset
+            print("Starting StreamConsumerUtility ...")
+            await self.consumer.seek(step=-1)  # Move to the previous offset
             async for message in self.consumer:
-                _ = await self.consumer.worker(message, arguments=arguments, settings=settings)
+                _ = await self.consumer.worker(
+                    message, arguments=arguments, settings=settings
+                )
                 await notify(KafkaMessageConsumedEvent(message))
         finally:
             await self.consumer.stop()
-            print('Stoped StreamConsumerUtility.')
+            print("Stoped StreamConsumerUtility.")

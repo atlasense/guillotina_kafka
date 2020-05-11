@@ -1,41 +1,34 @@
 from guillotina.commands import Command
+
 from guillotina_kafka.producer import SERIALIZER
 from guillotina_kafka.utilities import get_kafka_producer
 
+
 class SendMessageCommand(Command):
 
-    description = 'Start Kafka producer'
+    description = "Start Kafka producer"
 
     def get_parser(self):
         parser = super(SendMessageCommand, self).get_parser()
+        parser.add_argument("-i", "--interactive", action="store_true", default=False)
+        parser.add_argument("--serializer", type=str, default="bytes")
+        parser.add_argument("--topic", type=str, help="Kafka topic to produce to.")
+        parser.add_argument("--data", type=str, help="Data to send to the topic.")
         parser.add_argument(
-            '-i', '--interactive', action='store_true', default=False
-        )
-        parser.add_argument(
-            '--serializer', type=str, default='bytes'
-        )
-        parser.add_argument(
-            '--topic', type=str, help='Kafka topic to produce to.'
-        )
-        parser.add_argument(
-            '--data', type=str, help='Data to send to the topic.'
-        )
-        parser.add_argument(
-            '--api-version', type=str,
-            default='auto', help='Kafka server api version.'
+            "--api-version", type=str, default="auto", help="Kafka server api version."
         )
         return parser
 
     async def send(self, arguments, settings):
 
         serializer = SERIALIZER.get(
-            arguments.serializer, lambda data: data.encode('utf-8')
+            arguments.serializer, lambda data: data.encode("utf-8")
         )
         producer = get_kafka_producer()
         await producer.setup(
-            bootstrap_servers=settings['kafka']['brokers'],
+            bootstrap_servers=settings["kafka"]["brokers"],
             value_serializer=serializer,
-            api_version=arguments.api_version
+            api_version=arguments.api_version,
         )
 
         if arguments.interactive:

@@ -1,8 +1,10 @@
-import pytest
 import asyncio
+
+import pytest
+from aiokafka.structs import RecordMetadata
 from guillotina import app_settings
 from guillotina.component import get_adapter
-from aiokafka.structs import RecordMetadata
+
 from guillotina_kafka import get_kafka_producer
 from guillotina_kafka.producer import GetKafkaProducer
 
@@ -10,18 +12,15 @@ pytestmark = pytest.mark.asyncio
 
 
 async def test_producer_utility(kafka_container, event_loop, container_requester):
-    TEST_TOPIC = 'test-topic'
-    BOOTSTRAP_SERVERS = app_settings['kafka']['brokers']
+    TEST_TOPIC = "test-topic"
+    BOOTSTRAP_SERVERS = app_settings["kafka"]["brokers"]
     producer = get_kafka_producer()
     assert not producer.is_ready
 
-    await producer.setup(
-        bootstrap_servers=BOOTSTRAP_SERVERS,
-        loop=event_loop
-    )
+    await producer.setup(bootstrap_servers=BOOTSTRAP_SERVERS, loop=event_loop)
     assert producer.is_ready
 
-    result = await producer.send(TEST_TOPIC, {'foo': 'bar'})
+    result = await producer.send(TEST_TOPIC, {"foo": "bar"})
     assert isinstance(result, asyncio.Future)
     record = await result
     assert isinstance(record, RecordMetadata)

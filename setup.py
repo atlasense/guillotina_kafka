@@ -18,7 +18,7 @@ setup(
     description='Guillotina Kafka add-on',
     long_description=README,
     install_requires=[
-        'guillotina>5.0.0.dev0',
+        'guillotina==6.0.0b3',
         'aiokafka'
     ],
     author='Sekou Oumar',
@@ -31,15 +31,16 @@ setup(
     ],
     extras_require={
         'test': [
+            'aiohttp',
             'pytest',
             'docker',
             'backoff',
-            'psycopg2',
+            'psycopg2-binary',
             'pytest-asyncio>=0.8.0',
-            'pytest-aiohttp',
             'pytest-cov',
             'coverage>=4.4',
             'pytest-docker-fixtures>=1.2.7',
+            'async_asgi_testclient',
         ]
     },
     classifiers=[],

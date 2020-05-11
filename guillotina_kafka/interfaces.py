@@ -15,6 +15,7 @@ class IKafka(Interface):
 class IProducer(IKafka):
     pass
 
+
 class IKafkaProducerUtility(IKafka):
     pass
 
@@ -34,9 +35,9 @@ class IConsumerUtility(Interface):
 
 
 class IKafkaMessageConsumedEvent(Interface):
-    '''
+    """
     New message consumed by kafka
-    '''
+    """
 
 
 class IActiveConsumer(Interface):

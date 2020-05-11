@@ -1,6 +1,14 @@
 Changelog
 =========
 
+3.0.0
+-----
+
+- Added github actions
+- Isort and black
+- Test support for python3.8
+- Move to guillotina 6
+
 2.3.2
 -----
 
@@ -94,7 +102,7 @@ on every partition assignment
 -----
 
 - Multiple consumers in a single process fix
-- Add consumer-stat command to have a global stat on a topic 
+- Add consumer-stat command to have a global stat on a topic
 
 2.1.6
 -----

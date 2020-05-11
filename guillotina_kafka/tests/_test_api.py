@@ -1,11 +1,13 @@
-import json
-import pytest
 import asyncio
+import json
+
+import pytest
 
 pytestmark = pytest.mark.asyncio
 
+
 async def test_kafka_producer(event_loop, kafka_container):
-    pytest.skip('WIP')
+    pytest.skip("WIP")
     pass
     # aiotask_context.set('request', dummy_request)
 

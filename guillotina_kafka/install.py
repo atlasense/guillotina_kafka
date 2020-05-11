@@ -4,10 +4,9 @@ from guillotina.addons import Addon
 
 
 @configure.addon(
-    name="guillotina_kafka",
-    title="Guillotina server application python project")
+    name="guillotina_kafka", title="Guillotina server application python project"
+)
 class ManageAddon(Addon):
-
     @classmethod
     def install(cls, container, request):
         registry = request.container_settings  # noqa

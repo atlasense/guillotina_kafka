@@ -1,21 +1,18 @@
 import asyncio
-from guillotina import configure
+
 from aiokafka import AIOKafkaProducer
+from guillotina import configure
 from zope.interface import implementer
-from guillotina_kafka.interfaces import IProducer
-from guillotina_kafka.interfaces import IProducerUtility
+
+from guillotina_kafka.interfaces import IProducer, IProducerUtility
 
 
 @implementer(IProducer)
 class GenericProducer(object):
-
     def __init__(self, loop=None, **kwargs):
 
         self._producer = None
-        self.config = {
-            **kwargs,
-            'loop': loop or asyncio.get_event_loop()
-        }
+        self.config = {**kwargs, "loop": loop or asyncio.get_event_loop()}
 
     @property
     def is_ready(self):
@@ -38,11 +35,8 @@ class GenericProducer(object):
         return await self._producer.stop()
 
 
-
-@configure.adapter(
-    for_=IProducer, provides=IProducerUtility, name='generic')
+@configure.adapter(for_=IProducer, provides=IProducerUtility, name="generic")
 class GenericProducerUtility:
-
     def __init__(self, producer: GenericProducer):
         self.producer = producer
 
