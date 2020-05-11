@@ -18,7 +18,8 @@ setup(
     description='Guillotina Kafka add-on',
     long_description=README,
     install_requires=[
-        'guillotina==6.0.0b3',
+        "guillotina @ git+https://github.com/plone/guillotina@migration-5-to-6-fixes#egg=guillotina",
+        # "guillotina>=6.0.0",
         'aiokafka'
     ],
     author='Sekou Oumar',
