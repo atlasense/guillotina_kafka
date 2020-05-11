@@ -1,8 +1,9 @@
-import logging
-
-import aiokafka
 from guillotina import app_settings
 from guillotina.commands.server import ServerCommand
+
+import aiokafka
+import logging
+
 
 logger = logging.getLogger(__name__)
 

@@ -1,25 +1,24 @@
-import asyncio
 import json
-
 import pytest
+
 
 pytestmark = pytest.mark.asyncio
 
 
-async def test_kafka_producer(event_loop, kafka_container):
-    pytest.skip("WIP")
-    pass
+@pytest.mark.skip(reason="wip")
+async def test_kafka_producer(event_loop, kafka_container, container_requester):
     # aiotask_context.set('request', dummy_request)
 
-    # TEST_TOPIC = 'test-topic-api'
+    TEST_TOPIC = "test-topic-api"
 
-    # async with container_requester as requester:
-    #     resp, status = await requester(
-    #         'POST', f'/db/guillotina/@kafka-producer/{TEST_TOPIC}',
-    #         data=json.dumps({'foo': 'bar'})
-    #     )
-    #     assert status == 200
-    #     assert resp['topic'] == TEST_TOPIC
-    #     assert resp['offset'] == 0
+    async with container_requester as requester:
+        resp, status = await requester(
+            "POST",
+            f"/db/guillotina/@kafka-producer/{TEST_TOPIC}",
+            data=json.dumps({"foo": "bar"}),
+        )
+        assert status == 200
+        assert resp["topic"] == TEST_TOPIC
+        assert resp["offset"] == 0
 
     # aiotask_context.set('request', None)

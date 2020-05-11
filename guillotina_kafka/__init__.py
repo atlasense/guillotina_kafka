@@ -1,7 +1,7 @@
-from guillotina import configure
-
 from .interfaces import *  # noqa
 from .utilities import *  # noqa
+from guillotina import configure
+
 
 app_settings = {
     "commands": {

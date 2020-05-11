@@ -1,11 +1,13 @@
-import pytest
-from aiokafka.structs import ConsumerRecord, RecordMetadata
+from aiokafka.structs import ConsumerRecord
+from aiokafka.structs import RecordMetadata
 from guillotina import app_settings
 from guillotina.component import get_adapter
-
 from guillotina_kafka.consumer.stream import StreamConsumer
 from guillotina_kafka.interfaces import IConsumerUtility
 from guillotina_kafka.producer import GetKafkaProducer
+
+import pytest
+
 
 pytestmark = pytest.mark.asyncio
 

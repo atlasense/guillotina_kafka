@@ -1,9 +1,9 @@
-import asyncio
-import threading
-import time
-
 from aiokafka import AIOKafkaConsumer
 from guillotina import app_settings
+
+import asyncio
+import time
+
 
 KAFKA_CONSUMER_STAT = {}
 

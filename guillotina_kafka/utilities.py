@@ -1,12 +1,15 @@
+from aiokafka import AIOKafkaProducer
+from guillotina import app_settings
+from guillotina import configure
+from guillotina.component import get_utilities_for
+from guillotina.component import get_utility
+from guillotina_kafka.interfaces import IActiveConsumer
+from guillotina_kafka.interfaces import IKafkaProducerUtility
+
 import asyncio
 import json
 import logging
 
-from aiokafka import AIOKafkaProducer
-from guillotina import app_settings, configure
-from guillotina.component import get_utilities_for, get_utility
-
-from guillotina_kafka.interfaces import IActiveConsumer, IKafkaProducerUtility
 
 logger = logging.getLogger(__name__)
 

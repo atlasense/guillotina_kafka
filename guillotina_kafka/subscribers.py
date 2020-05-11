@@ -1,7 +1,6 @@
 from guillotina import configure
 from guillotina.component import get_utility
 from guillotina.interfaces import IApplicationCleanupEvent
-
 from guillotina_kafka import IKafkaProducerUtility
 
 

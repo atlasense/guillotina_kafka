@@ -1,20 +1,25 @@
+from aiokafka import AIOKafkaConsumer
+from aiokafka import ConsumerRebalanceListener
+from aiokafka.errors import IllegalStateError
+from aiokafka.structs import TopicPartition
+from guillotina import app_settings
+from guillotina import task_vars
+from guillotina.commands.server import ServerCommand
+from guillotina.component import get_utility
+from guillotina.component import provide_utility
+from guillotina.tests.utils import get_mocked_request
+from guillotina.tests.utils import login
+from guillotina.utils import resolve_dotted_name
+from guillotina_kafka.consumer import ConsumerWorkerLookupError
+from guillotina_kafka.interfaces import IActiveConsumer
+from guillotina_kafka.interfaces import IKafkaProducerUtility
+from typing import List
+
 import asyncio
 import inspect
 import logging
 import os
-from typing import List
 
-from aiokafka import AIOKafkaConsumer, ConsumerRebalanceListener
-from aiokafka.errors import IllegalStateError
-from aiokafka.structs import TopicPartition
-from guillotina import app_settings, task_vars
-from guillotina.commands.server import ServerCommand
-from guillotina.component import get_utility, provide_utility
-from guillotina.tests.utils import get_mocked_request, login
-from guillotina.utils import resolve_dotted_name
-
-from guillotina_kafka.consumer import ConsumerWorkerLookupError
-from guillotina_kafka.interfaces import IActiveConsumer, IKafkaProducerUtility
 
 logger = logging.getLogger(__name__)
 
@@ -170,9 +175,10 @@ class BaseConsumerWorker:
             return await self.seek(topic, position)
 
         try:
-            await {"beginning": topic.seek_to_beginning, "end": topic.seek_to_end}[
+            func = {"beginning": topic.seek_to_beginning, "end": topic.seek_to_end}[
                 position
-            ]()
+            ]
+            await func()
         except KeyError:
             raise Exception("Invalid offset position")
 
@@ -190,7 +196,7 @@ class ConsumerGroupeRebalancer(ConsumerRebalanceListener):
         self.consumer = consumer
 
     async def on_partitions_assigned(self, assigned: List[TopicPartition]) -> None:
-        """This method will be called after partition 
+        """This method will be called after partition
            re-assignment completes and before the consumer
            starts fetching data again.
 

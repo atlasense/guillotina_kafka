@@ -1,6 +1,5 @@
-from zope.interface import implementer
-
 from .interfaces import IKafkaMessageConsumedEvent
+from zope.interface import implementer
 
 
 @implementer(IKafkaMessageConsumedEvent)

@@ -1,12 +1,10 @@
-import asyncio
-
-import pytest
 from aiokafka.structs import RecordMetadata
 from guillotina import app_settings
-from guillotina.component import get_adapter
-
 from guillotina_kafka import get_kafka_producer
-from guillotina_kafka.producer import GetKafkaProducer
+
+import asyncio
+import pytest
+
 
 pytestmark = pytest.mark.asyncio
 

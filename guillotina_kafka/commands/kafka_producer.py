@@ -1,5 +1,4 @@
 from guillotina.commands import Command
-
 from guillotina_kafka.producer import SERIALIZER
 from guillotina_kafka.utilities import get_kafka_producer
 

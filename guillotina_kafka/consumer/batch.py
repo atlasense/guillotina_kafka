@@ -1,13 +1,11 @@
-import asyncio
-import uuid
-
-from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
-from aiokafka.errors import KafkaError, KafkaTimeoutError
 from guillotina import configure
+from guillotina_kafka.consumer import Consumer
+from guillotina_kafka.interfaces import IConsumer
+from guillotina_kafka.interfaces import IConsumerUtility
 from zope.interface import implementer
 
-from guillotina_kafka.consumer import Consumer
-from guillotina_kafka.interfaces import IConsumer, IConsumerUtility
+import asyncio
+import uuid
 
 
 @implementer(IConsumer)

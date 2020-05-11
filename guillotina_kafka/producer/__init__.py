@@ -1,11 +1,13 @@
+from aiokafka.errors import KafkaError
+from aiokafka.errors import KafkaTimeoutError
+from functools import wraps
+from guillotina.component import get_adapter
+from guillotina_kafka.producer.generic import GenericProducer
+from guillotina_kafka.producer.generic import IProducerUtility
+
 import json
 import pickle
-from functools import wraps
 
-from aiokafka.errors import KafkaError, KafkaTimeoutError
-from guillotina.component import get_adapter
-
-from guillotina_kafka.producer.generic import GenericProducer, IProducerUtility
 
 SERIALIZER = {
     "json": lambda data: json.dumps(data).encode("utf-8"),

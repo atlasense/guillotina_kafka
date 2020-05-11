@@ -1,17 +1,19 @@
+from guillotina import app_settings
+from guillotina.commands.server import ServerCommand
+from guillotina.component import get_adapter
+from guillotina.component import provide_utility
+from guillotina.utils import resolve_dotted_name
+from guillotina_kafka.consumer import ConsumerWorkerLookupError
+from guillotina_kafka.consumer import InvalidConsumerType
+from guillotina_kafka.consumer.batch import BatchConsumer
+from guillotina_kafka.consumer.stream import StreamConsumer
+from guillotina_kafka.interfaces import IActiveConsumer
+from guillotina_kafka.interfaces import IConsumerUtility
+
 import asyncio
 import logging
 import sys
 
-from guillotina import app_settings
-from guillotina.commands.server import ServerCommand
-from guillotina.component import get_adapter, provide_utility
-from guillotina.utils import resolve_dotted_name
-
-from guillotina_kafka.consumer import (ConsumerWorkerLookupError,
-                                       InvalidConsumerType)
-from guillotina_kafka.consumer.batch import BatchConsumer
-from guillotina_kafka.consumer.stream import StreamConsumer
-from guillotina_kafka.interfaces import IActiveConsumer, IConsumerUtility
 
 logger = logging.getLogger(__name__)
 
@@ -96,9 +98,10 @@ class StartConsumerCommand(ServerCommand):
             topics = cli_topic or settings_topics
             if len(topics) == 0:
                 raise Exception("No topics found")
-            consumer = {"batch": BatchConsumer, "stream": StreamConsumer,}[
+            consumer_klas = {"batch": BatchConsumer, "stream": StreamConsumer}[
                 arguments.consumer_type
-            ](
+            ]
+            consumer = consumer_klas(
                 topics,
                 worker=consumer_worker,
                 group_id=(

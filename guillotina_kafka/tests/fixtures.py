@@ -1,5 +1,8 @@
+from guillotina import app_settings
+from guillotina import testing
+
 import pytest
-from guillotina import app_settings, testing
+
 
 base_kafka_settings = {"brokers": ["localhost:9092"]}
 

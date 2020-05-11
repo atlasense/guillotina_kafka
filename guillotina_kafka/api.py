@@ -1,11 +1,9 @@
-import asyncio
-import json
-
-from guillotina import app_settings, configure
+from guillotina import app_settings
+from guillotina import configure
 from guillotina.api.service import Service
-
 from guillotina_kafka.consumer import KAFKA_CONSUMER_STAT
 from guillotina_kafka.producer import GetKafkaProducer
+
 
 producer = None
 

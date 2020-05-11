@@ -2,11 +2,11 @@ from aiokafka import TopicPartition
 from aiokafka.errors import IllegalStateError
 from guillotina import configure
 from guillotina.event import notify
-from zope.interface import implementer
-
 from guillotina_kafka.consumer import Consumer
 from guillotina_kafka.events import KafkaMessageConsumedEvent
-from guillotina_kafka.interfaces import IConsumer, IConsumerUtility
+from guillotina_kafka.interfaces import IConsumer
+from guillotina_kafka.interfaces import IConsumerUtility
+from zope.interface import implementer
 
 
 @implementer(IConsumer)

@@ -1,10 +1,10 @@
-import asyncio
-
 from aiokafka import AIOKafkaProducer
 from guillotina import configure
+from guillotina_kafka.interfaces import IProducer
+from guillotina_kafka.interfaces import IProducerUtility
 from zope.interface import implementer
 
-from guillotina_kafka.interfaces import IProducer, IProducerUtility
+import asyncio
 
 
 @implementer(IProducer)
