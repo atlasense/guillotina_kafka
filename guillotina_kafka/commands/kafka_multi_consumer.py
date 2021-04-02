@@ -145,7 +145,7 @@ class StartConsumersCommand(ServerCommand):
                     self.tasks.append(
                         self.run_consumer(worker["handler"], consumer, worker)
                     )
-        await asyncio.gather(*self.tasks, loop=self.get_loop())
+        asyncio.create_task(asyncio.gather(*self.tasks, loop=self.get_loop()))
 
     def run(self, arguments, settings, app):
         app.on_startup.append(partial(self._run, arguments))
