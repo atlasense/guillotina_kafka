@@ -1,6 +1,11 @@
 Changelog
 =========
 
+2.3.4
+-----
+
+- fix startup command
+
 2.3.3
 -----
 

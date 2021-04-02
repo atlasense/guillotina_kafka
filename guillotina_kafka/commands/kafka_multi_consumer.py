@@ -1,4 +1,5 @@
 from aiokafka import AIOKafkaConsumer
+from functools import partial
 from aiokafka import ConsumerRebalanceListener
 from aiokafka.errors import IllegalStateError
 from aiokafka.structs import TopicPartition
@@ -101,7 +102,7 @@ class StartConsumersCommand(ServerCommand):
             )
         return worker
 
-    def run(self, arguments, settings, app):
+    async def _run(self, arguments, app):
         self.tasks = []
         worker_names = arguments.consumer_worker
         if isinstance(worker_names, str):
@@ -144,7 +145,10 @@ class StartConsumersCommand(ServerCommand):
                     self.tasks.append(
                         self.run_consumer(worker["handler"], consumer, worker)
                     )
-        asyncio.gather(*self.tasks, loop=self.get_loop())
+        await asyncio.gather(*self.tasks, loop=self.get_loop())
+
+    def run(self, arguments, settings, app):
+        app.on_startup.append(partial(self._run, arguments))
         return super().run(arguments, settings, app)
 
 
@@ -194,7 +198,7 @@ class ConsumerGroupeRebalancer(ConsumerRebalanceListener):
         self.consumer = consumer
 
     async def on_partitions_assigned(self, assigned: List[TopicPartition]) -> None:
-        """This method will be called after partition 
+        """This method will be called after partition
            re-assignment completes and before the consumer
            starts fetching data again.
 
