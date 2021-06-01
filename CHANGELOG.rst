@@ -1,6 +1,10 @@
 Changelog
 =========
 
+2.3.7
+-----
+
+- handle partitions revoked
 
 2.3.6
 -----

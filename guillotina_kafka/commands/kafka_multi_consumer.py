@@ -46,7 +46,7 @@ class StartConsumersCommand(ServerCommand):
         )
         return parser
 
-    def get_worker(self, name):
+    def get_worker_conf(self, name):
         for worker in app_settings["kafka"]["consumer"]["workers"]:
             if name == worker["name"]:
                 worker = {
@@ -70,12 +70,6 @@ class StartConsumersCommand(ServerCommand):
         login()
         task_vars.request.set(request)
 
-        if inspect.isclass(worker):
-            worker = worker()
-        # store __consumer__ here so we can shut this consumer down on exit
-        # by looking up the utiltiy
-        worker.__consumer__ = consumer
-        provide_utility(worker, IActiveConsumer, worker_conf["name"])
         try:
             await worker(consumer, request, worker_conf, app_settings)
         except Exception:
@@ -88,8 +82,8 @@ class StartConsumersCommand(ServerCommand):
                 pass
             os._exit(1)
 
-    def init_worker(self, worker_name, arguments):
-        worker = self.get_worker(worker_name)
+    def init_worker_conf(self, worker_name, arguments):
+        worker = self.get_worker_conf(worker_name)
         if not worker:
             raise ConsumerWorkerLookupError(
                 f"{worker_name}: Worker has not been registered."
@@ -100,6 +94,16 @@ class StartConsumersCommand(ServerCommand):
             raise ConsumerWorkerLookupError(
                 f"{worker_name}: Worker has not been registered."
             )
+        return worker
+
+    def _get_worker(self, consumer, worker_conf):
+        worker = worker_conf["handler"]
+        if inspect.isclass(worker):
+            worker = worker()
+        # store __consumer__ here so we can shut this consumer down on exit
+        # by looking up the utiltiy
+        worker.__consumer__ = consumer
+        provide_utility(worker, IActiveConsumer, worker_conf["name"])
         return worker
 
     async def _run(self, arguments, app):
@@ -119,32 +123,37 @@ class StartConsumersCommand(ServerCommand):
         )
 
         for worker_name in worker_names:
-            worker = self.init_worker(worker_name, arguments)
+            worker_conf = self.init_worker_conf(worker_name, arguments)
             topic_prefix = app_settings["kafka"].get("topic_prefix", "")
             worker_conn_settings = {
                 **conn_settings,
-                **(getattr(worker["handler"], "connection_settings", {}) or {}),
-                **(worker.get("connection_settings") or {}),
+                **(getattr(worker_conf["handler"], "connection_settings", {}) or {}),
+                **(worker_conf.get("connection_settings") or {}),
             }
-            if worker.get("regex_topic"):
+            if worker_conf.get("regex_topic"):
                 consumer = AIOKafkaConsumer(
-                    group_id=worker.get("group", "default"), **worker_conn_settings
+                    group_id=worker_conf.get("group", "default"), **worker_conn_settings
                 )
                 self.tasks.append(
-                    self.run_consumer(worker["handler"], consumer, worker)
+                    self.run_consumer(
+                        self._get_worker(consumer, worker_conf), consumer, worker_conf
+                    )
                 )
             else:
-                for topic in worker["topics"]:
+                for topic in worker_conf["topics"]:
                     topic_id = f"{topic_prefix}{topic}"
-                    group_id = worker.get("group", "default").format(topic=topic_id)
+                    group_id = worker_conf.get("group", "default").format(
+                        topic=topic_id
+                    )
                     consumer = AIOKafkaConsumer(
                         group_id=group_id, **worker_conn_settings
                     )
-                    listener = ConsumerGroupeRebalancer(consumer=consumer)
-                    consumer.subscribe(topics=[topic_id], listener=listener)
-                    self.tasks.append(
-                        self.run_consumer(worker["handler"], consumer, worker)
+                    worker = self._get_worker(consumer, worker_conf)
+                    listener = ConsumerGroupeRebalancer(
+                        consumer=consumer, worker=worker
                     )
+                    consumer.subscribe(topics=[topic_id], listener=listener)
+                    self.tasks.append(self.run_consumer(worker, consumer, worker_conf))
         asyncio.create_task(asyncio.wait(self.tasks))
 
     def run(self, arguments, settings, app):
@@ -194,8 +203,29 @@ class BaseConsumerWorker:
 
 
 class ConsumerGroupeRebalancer(ConsumerRebalanceListener):
-    def __init__(self, consumer: AIOKafkaConsumer):
+    def __init__(self, consumer: AIOKafkaConsumer, worker):
         self.consumer = consumer
+        self.worker = worker
+
+    async def on_partitions_revoked(self, revoked):
+        """
+        There is a difficult relationship between guillotina_kafka and how
+        a consumer/worker is setup right now.
+
+        The rebalance listener is composed in guillotina_kafka and not
+        accessible for the worker implementation where we do the manual
+        commit handling in canonical.
+
+        Long term, this should be moved to kafkaesk and done correctly; however,
+        right now, we have to
+        """
+        if revoked:
+            if (
+                not self.consumer._enable_auto_commit
+                and getattr(self.worker, "flush", None) is not None
+            ):
+                async with self.worker.lock:
+                    await self.worker.flush()
 
     async def on_partitions_assigned(self, assigned: List[TopicPartition]) -> None:
         """This method will be called after partition
